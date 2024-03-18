@@ -65,11 +65,25 @@ const app = express();
 //     res.status(500).json({ error: 'An unexpected error occurred' });
 //   }
 // });
+interface Response {
+  status: number;
+  message?: string;
+}
+const chihab = {
+  staus: 200,
+  massage: "testing",
+};
+app.use(express.json());
 app.get("/api/v1/pharma", (req, res) => {
   console.log("this is the get request");
   res.status(200).json({
     status: "success",
-    result: "hello world",
+    result: chihab,
   });
+});
+
+app.post("/api/v1/pharma", (req, res) => {
+  console.log(req.body);
+  res.send("Done");
 });
 export default app;
