@@ -1,4 +1,6 @@
 import express from "express";
+import morgan from "morgan";
+
 // // import router from "./routes";
 // import morgan from "morgan";
 // const { check, validationResult } = require("express-validator");
@@ -6,6 +8,8 @@ import express from "express";
 // // import { protect } from "./modules/auth";
 // // import { createNewUser, signin } from "./handlers/user";
 const app = express();
+app.use(morgan("dev")); //morgan middleware to give a brave line of URL requested in console-line
+
 // // const customLogger = (message) => (res, req, next) => {
 // //   console.log("hello forn ${message}");
 // //   next();
@@ -81,7 +85,12 @@ app.get("/api/v1/pharma", (req, res) => {
     result: chihab,
   });
 });
+app.get("/api/v1/phama/:id/:x?", (req, res) => {
+  // const id = req.params.id * 1; //convert the id to string trick
 
+  console.log(req.params);
+  res.json({ status: "success" });
+});
 app.post("/api/v1/pharma", (req, res) => {
   console.log(req.body);
   res.send("Done");
