@@ -93,6 +93,7 @@ app.get("/api/v1/phama/:id/:x?", (req, res) => {
 });
 app.post("/api/v1/pharma", (req, res) => {
   console.log(req.body);
+
   res.send("Done");
 });
 export default app;

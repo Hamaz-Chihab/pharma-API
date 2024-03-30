@@ -19,7 +19,8 @@ export default merge({
   port: 3000,
 
   secrets: {
-    jwt: process.env.JWT_SECRET,
     dbUrl: process.env.DATABASE_URL,
+    DataBase_Password: process.env.DATABASE_PASSWORD,
+    // jwt: process.env.JWT_SECRET,
   },
 });
