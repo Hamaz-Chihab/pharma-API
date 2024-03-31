@@ -2,23 +2,29 @@ import { Request, Response } from "express";
 import { UserModel } from "../modules/user.schema";
 export const createNewUser = async (req: Request, res: Response) => {
   try {
-    const user = await UserModel.create({
-      data: {
-        user: req.body,
-      },
-    });
+    // Optional Validation (using UserModel.validateSync())
     console.log(req.body);
+    const newUser = new UserModel(req.body);
+    const validationErrors = newUser.validateSync();
+    if (validationErrors) {
+      const errorMessages = Object.values(validationErrors.errors).map(
+        (err) => err.message
+      );
+      return res.status(400).json({ status: "fail", message: errorMessages });
+    }
+
+    // Create and Save User
+    const user = await UserModel.create(req.body);
+
+    // Respond with Success and User Data
     res.status(201).json({
       status: "success",
       data: {
-        user: req.body,
+        user, // Includes all fields defined in the schema
       },
     });
   } catch (error) {
-    console.log(error);
-    res.status(400).json({
-      status: "fail",
-      message: error,
-    });
+    console.error("Error creating user:", error);
+    res.status(500).json({ status: "error", message: "Internal Server Error" });
   }
 };

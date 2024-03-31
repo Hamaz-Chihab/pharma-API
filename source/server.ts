@@ -1,6 +1,8 @@
 import express from "express";
 import morgan from "morgan";
 import router from "./routes/userRoutes";
+import bodyParser from "body-parser"; // Assuming TypeScript definitions are available
+
 // // import router from "./routes";
 // import morgan from "morgan";
 // const { check, validationResult } = require("express-validator");
@@ -8,6 +10,8 @@ import router from "./routes/userRoutes";
 // // import { protect } from "./modules/auth";
 // // import { createNewUser, signin } from "./handlers/user";
 const app = express();
+app.use(bodyParser.json()); // Parse JSON request bodies very important to have the req and the res contain some thing
+app.use(express.json()); //
 app.use(morgan("dev")); //morgan middleware to give a brave line of URL requested in console-line
 app.use("/api", router); // by adding 'protect' we use auth in the routes
 
@@ -78,7 +82,7 @@ app.use("/api", router); // by adding 'protect' we use auth in the routes
 //   staus: 200,
 //   massage: "testing",
 // };
-app.use(express.json()); //very important to have the req and the res contain some thing
+
 // // app.get("/api/v1/pharma", (req, res) => {
 // //   console.log("this is the get request");
 // //   res.status(200).json({
