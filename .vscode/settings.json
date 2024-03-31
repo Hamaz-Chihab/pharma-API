@@ -1,0 +1,8 @@
+{
+  "discord.detailsEditing": "hello there :)",
+  "discord.lowerDetailsNoWorkspaceFound": "hello there :)",
+  "discord.lowerDetailsDebugging": "hello there :)",
+  "discord.lowerDetailsEditing": "hello there :)",
+  "discord.removeDetails": false,
+  "discord.removeTimestamp": false
+}

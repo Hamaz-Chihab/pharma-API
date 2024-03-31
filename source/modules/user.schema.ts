@@ -6,14 +6,13 @@ interface User {
   email: string;
   password: string; // Hashed for security
   role: "pharmacy_staff" | "admin";
-  // Add other user-specific fields as needed
 }
 
 const userSchema = new Schema<User>({
-  name: { type: String, required: true },
-  email: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-  role: { type: String, enum: ["pharmacy_staff", "admin"], required: true },
+  name: { type: String },
+  email: { type: String, unique: true },
+  password: { type: String },
+  role: { type: String, enum: ["pharmacy_staff", "admin"] },
   // Add other schema definitions for user fields
 });
 
