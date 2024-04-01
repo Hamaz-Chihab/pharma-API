@@ -13,7 +13,7 @@ const app = express();
 app.use(bodyParser.json()); // Parse JSON request bodies very important to have the req and the res contain some thing
 app.use(express.json()); //
 app.use(morgan("dev")); //morgan middleware to give a brave line of URL requested in console-line
-app.use("/api", router); // by adding 'protect' we use auth in the routes
+app.use("/api/v1", router); // by adding 'protect' we use auth in the routes
 
 // // const customLogger = (message) => (res, req, next) => {
 // //   console.log("hello forn ${message}");
