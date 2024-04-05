@@ -1,0 +1,59 @@
+[
+  {
+    "name": "Super Sunscreen",
+    "description": "Broad-spectrum protection to keep your skin safe",
+    "price": 24.99,
+    "stockQuantity": 50,
+    "imageCover": "http://example.com/sunscreen.jpg",
+    "images": [
+      "http://example.com/sunscreen-1.jpg",
+      "http://example.com/sunscreen-2.jpg"
+    ],
+    "category": "Skincare",
+    "brand": "Sun Shield",
+    "activeIngredients": ["SPF 50+", "Zinc Oxide", "Titanium Dioxide"],
+    "dosage": "Apply liberally 15 minutes before sun exposure. Reapply every 2 hours, or more frequently if swimming or sweating.",
+    "promotions": [
+      {
+        "type": "discount",
+        "value": 10,
+        "startDate": "2024-04-05T02:17:21.422Z",
+        "endDate": "2024-04-19T02:17:21.422Z"
+      }
+    ]
+  },
+  {
+    "name": "Energizing Shampoo",
+    "description": "Wake up your scalp and promote healthy hair growth",
+    "price": 18.5,
+    "stockQuantity": 32,
+    "imageCover": "http://example.com/shampoo.jpg",
+    "images": [
+      "http://example.com/shampoo-1.jpg",
+      "http://example.com/shampoo-2.jpg"
+    ],
+    "category": "Haircare",
+    "brand": "Hair Oasis",
+    "activeIngredients": ["Biotin", "Keratin", "Coconut Oil"],
+    "dosage": "Massage a generous amount into wet hair and scalp. Rinse thoroughly."
+  },
+  {
+    "name": "Daily Multivitamin",
+    "description": "Essential vitamins and minerals for overall health",
+    "price": 39.95,
+    "stockQuantity": 100,
+    "imageCover": "http://example.com/multivitamin.jpg",
+    "images": ["http://example.com/multivitamin-1.jpg"],
+    "brand": "Vitality Plus",
+    "activeIngredients": [
+      "Vitamin A",
+      "Vitamin C",
+      "Vitamin D3",
+      "Vitamin E",
+      "B-Complex",
+      "Calcium",
+      "Magnesium"
+    ],
+    "dosage": "Take one capsule daily with food."
+  }
+]

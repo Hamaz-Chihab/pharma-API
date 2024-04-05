@@ -1,6 +1,7 @@
 import { Schema, model } from "mongoose";
 
-interface Product {
+// Define the exported Product interface
+export interface Product {
   name: string;
   description: string;
   price: number;
@@ -15,13 +16,15 @@ interface Product {
   promotions?: Promotion[];
 }
 
-interface Promotion {
+// Define the exported Promotion interface
+export interface Promotion {
   type: string; // e.g., "discount", "bundle"
   value: number | string; // Discount percentage or bundle details
   startDate: Date;
   endDate: Date;
 }
 
+// Define the Promotion schema
 const PromotionSchema = new Schema<Promotion>({
   type: { type: String, required: true },
   value: { type: Schema.Types.Mixed, required: true }, // Allow for numbers or descriptive text
@@ -29,6 +32,7 @@ const PromotionSchema = new Schema<Promotion>({
   endDate: { type: Date, required: true },
 });
 
+// Define the Product schema
 const productSchema = new Schema<Product>({
   name: { type: String, required: true, trim: true },
   description: { type: String, required: true },
@@ -41,7 +45,7 @@ const productSchema = new Schema<Product>({
   },
   createdAt: { type: Date, default: Date.now() },
   category: { type: String },
-  brand: { type: String, required: true, trim: true }, //trim is to delete the space in the begining
+  brand: { type: String, required: true, trim: true }, //trim is to delete the space in the beginning
   activeIngredients: [{ type: String, required: true }],
   dosage: String,
   promotions: [PromotionSchema],
@@ -53,4 +57,5 @@ productSchema.pre("save", async function (next) {
   next();
 });
 
+// Export the ProductModel
 export const ProductModel = model<Product>("Product", productSchema);
