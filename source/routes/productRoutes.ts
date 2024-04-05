@@ -1,4 +1,5 @@
 import { Router } from "express";
+
 import {
   getAllProducts,
   getOneProduct,
@@ -9,5 +10,5 @@ const productRoutes = Router();
 //the error handler should be for the next
 //product routes :
 productRoutes.get("/products", getAllProducts); // Mount the controller functions to routes
-productRoutes.get("/products/:id", getOneProduct);
+productRoutes.get("/products", getOneProduct);
 export default productRoutes;
