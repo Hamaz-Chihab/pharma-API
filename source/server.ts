@@ -1,8 +1,8 @@
 import express from "express";
 import morgan from "morgan";
-import router from "./routes/userRoutes";
 import bodyParser from "body-parser"; // Assuming TypeScript definitions are available
-
+import userRoutes from "./routes/userRoutes";
+import productRoutes from "./routes/productRoutes";
 // // import router from "./routes";
 // import morgan from "morgan";
 // const { check, validationResult } = require("express-validator");
@@ -13,7 +13,8 @@ const app = express();
 app.use(bodyParser.json()); // Parse JSON request bodies very important to have the req and the res contain some thing
 app.use(express.json()); //
 app.use(morgan("dev")); //morgan middleware to give a brave line of URL requested in console-line
-app.use("/api/v1", router); // by adding 'protect' we use auth in the routes
+app.use("/api/v1/users", userRoutes); // Assuming base path for user routes is "/api/users"
+app.use("/api/v1/products", productRoutes); // Assuming base path for product routes is "/api/products"
 
 // // const customLogger = (message) => (res, req, next) => {
 // //   console.log("hello forn ${message}");
