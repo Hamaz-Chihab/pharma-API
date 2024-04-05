@@ -97,19 +97,22 @@ main(); // Start the script
 // Read products from JSON file
 function readProductsFile() {
     return __awaiter(this, void 0, void 0, function () {
-        var data, err_2;
+        var path, filePath, data, err_2;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
                     _a.trys.push([0, 2, , 3]);
-                    return [4 /*yield*/, fs.readFile("products.json", "utf-8")];
+                    path = require("path");
+                    filePath = path.join(process.cwd(), // Or any base path
+                    "source", "dev_data", "data", "products.json");
+                    return [4 /*yield*/, fs.readFile(filePath, "utf-8")];
                 case 1:
                     data = _a.sent();
                     return [2 /*return*/, JSON.parse(data)];
                 case 2:
                     err_2 = _a.sent();
                     console.error("Error reading products file:", err_2);
-                    return [2 /*return*/, []];
+                    return [2 /*return*/, undefined]; // Indicate error by returning undefined
                 case 3: return [2 /*return*/];
             }
         });
@@ -122,18 +125,24 @@ function importData(products) {
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    _a.trys.push([0, 2, , 3]);
-                    return [4 /*yield*/, product_schema_1.ProductModel.create(products)];
+                    if (!products || !products.length) {
+                        console.error("No products found to import. Skipping.");
+                        return [2 /*return*/];
+                    }
+                    _a.label = 1;
                 case 1:
+                    _a.trys.push([1, 3, , 4]);
+                    return [4 /*yield*/, product_schema_1.ProductModel.create(products)];
+                case 2:
                     _a.sent();
                     console.log("Data successfully loaded");
-                    return [3 /*break*/, 3];
-                case 2:
+                    return [3 /*break*/, 4];
+                case 3:
                     err_3 = _a.sent();
                     console.error("Error importing data:", err_3);
                     process.exit(1); // Exit with an error code
-                    return [3 /*break*/, 3];
-                case 3: return [2 /*return*/];
+                    return [3 /*break*/, 4];
+                case 4: return [2 /*return*/];
             }
         });
     });
