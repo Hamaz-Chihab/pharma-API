@@ -1,9 +1,13 @@
 import { Router } from "express";
-import getAllProducts from "../controllers/productController";
-const productRoutes  = Router();
+import {
+  getAllProducts,
+  getOneProduct,
+} from "../controllers/productController"; // Adjust path as needed
+const productRoutes = Router();
 //error handler Middleware for the router file :
 
 //the error handler should be for the next
 //product routes :
-productRoutes .get("/", getAllProducts);
-export default productRoutes ;
+productRoutes.get("/products", getAllProducts); // Mount the controller functions to routes
+productRoutes.get("/products/:id", getOneProduct);
+export default productRoutes;
