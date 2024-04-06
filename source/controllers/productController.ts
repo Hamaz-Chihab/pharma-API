@@ -29,6 +29,34 @@ export const getAllProducts = async (req: Request, res: Response) => {
     }
 
     let query = ProductModel.find({}); // Initialize query object
+    // Pagination logic
+    let limit = 10; // Default limit per page
+    let skip = 0; // Initial skip value (offset)
+
+    if (req.query.limit) {
+      try {
+        limit = parseInt(req.query.limit as string, 10); // Parse limit from query
+        limit = Math.min(limit, 100); // Limit maximum to 100 for security
+      } catch (err) {
+        console.error("Error parsing limit parameter:", err);
+        res.status(400).json({ error: "Invalid limit parameter" });
+        return; // Exit early on invalid limit format
+      }
+    }
+
+    if (req.query.page) {
+      try {
+        const page = parseInt(req.query.page as string, 10); // Parse page number
+        skip = limit * (page - 1); // Calculate skip based on page and limit
+      } catch (err) {
+        console.error("Error parsing page parameter:", err);
+        res.status(400).json({ error: "Invalid page parameter" });
+        return; // Exit early on invalid page format
+      }
+    }
+
+    // Apply pagination to the query
+    query = query.limit(limit).skip(skip);
 
     // Apply default sorting (if not specified):
     if (!req.query.sort) {
