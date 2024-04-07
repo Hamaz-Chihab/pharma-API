@@ -21,7 +21,45 @@ export const setProductQueryParams = (
 
   next();
 };
+export const getProductStatus = async (req: Request, res: Response) => {
+  try {
+    // Define the aggregation pipeline
+    const pipeline = [
+      {
+        $group: {
+          _id: null, // Set to null for overall product statistics
+          totalProducts: { $sum: 1 }, // Count all products
+          averagePrice: { $avg: "$price" }, // Calculate average price
+          inStock: { $sum: { $cond: [{ $gt: ["$stockQuantity", 0] }, 1, 0] } }, // Count in-stock products
+          outOfStock: {
+            $sum: { $cond: [{ $eq: ["$stockQuantity", 0] }, 1, 0] },
+          }, // Count out-of-stock products
+          // Add more aggregations as needed (e.g., total active promotions)
+        },
+      },
+    ];
 
+    // Execute the aggregation pipeline
+    const productStatus = await ProductModel.aggregate(pipeline);
+
+    if (!productStatus.length) {
+      return res.status(200).json({
+        status: "success",
+        data: {
+          message: "No products found",
+        },
+      });
+    }
+
+    res.status(200).json({
+      status: "success",
+      data: productStatus[0], // Assuming only one result from aggregation
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to retrieve product status" });
+  }
+};
 export const getAllProducts = async (req: Request, res: Response) => {
   try {
     // Advanced filtering:
