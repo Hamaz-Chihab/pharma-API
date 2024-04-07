@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { ProductModel } from "../modules/product.schema";
-import { json } from "body-parser";
+// import { ApiFeatures } from "../utils/ApiFeatures";
 
 export const setProductQueryParams = (
   req: Request,
@@ -128,11 +128,24 @@ export const getAllProducts = async (req: Request, res: Response) => {
     res.status(500).json({ error: "Failed to retrieve products" });
   }
 };
-// export const getOneProduct = async (req: Request, res: Response) => {
-//   try {
 
+// export const getAllProducts = async (req: Request, res: Response) => {
+//   try {
+//     const apiFeatures = new ApiFeatures(req.query, req.query.toString());
+
+//     apiFeatures.filter();
+//     apiFeatures.sort();
+//     apiFeatures.limitFields();
+//     apiFeatures.paginate();
+
+//     const query = ProductModel.find(apiFeatures.getQuery()); // Use getQuery()
+
+//     const products = await query.populate("promotions"); // Execute query with sorting, filtering, and (optional) field limiting
+
+//     console.log("this is the products :", products);
 //     res.status(200).json({
 //       status: "success",
+//       results: products.length,
 //       data: products,
 //     });
 //   } catch (err) {
