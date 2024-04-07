@@ -1,6 +1,27 @@
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import { ProductModel } from "../modules/product.schema";
 import { json } from "body-parser";
+
+export const setProductQueryParams = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  // Set default query parameters
+  req.query.category = "Haircare";
+  req.query.sort = "price";
+
+  // Allow overriding defaults with incoming query parameters (type safety)
+  if (typeof req.query.category === "string") {
+    req.query.category = req.query.category; // Use existing category if provided
+  }
+  if (typeof req.query.sort === "string") {
+    req.query.sort = req.query.sort; // Use existing sort if provided
+  }
+
+  next();
+};
+
 export const getAllProducts = async (req: Request, res: Response) => {
   try {
     // Advanced filtering:

@@ -14,7 +14,7 @@ app.use(bodyParser.json()); // Parse JSON request bodies very important to have 
 app.use(express.json()); //
 app.use(morgan("dev")); //morgan middleware to give a brave line of URL requested in console-line
 app.use("/api/v1/users", userRoutes); // Assuming base path for user routes is "/api/users"
-app.use("/api/v1/", productRoutes); // Assuming base path for product routes is "/api/products"
+app.use("/api/v1/products", productRoutes); // Assuming base path for product routes is "/api/products"
 
 // // const customLogger = (message) => (res, req, next) => {
 // //   console.log("hello forn ${message}");
