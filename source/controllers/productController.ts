@@ -27,7 +27,7 @@ export const getProductStatus = async (req: Request, res: Response) => {
     const pipeline = [
       {
         $group: {
-          _id: null, // Set to null for overall product statistics
+          _id: "$price", // Set to null for overall product statistics
           totalProducts: { $sum: 1 }, // Count all products
           averagePrice: { $avg: "$price" }, // Calculate average price
           inStock: { $sum: { $cond: [{ $gt: ["$stockQuantity", 0] }, 1, 0] } }, // Count in-stock products
