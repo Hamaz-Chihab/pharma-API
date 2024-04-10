@@ -6,7 +6,7 @@ import productRoutes from "./routes/productRoutes";
 // // import router from "./routes";
 // import morgan from "morgan";
 // const { check, validationResult } = require("express-validator");
-
+console.log("hello wo");
 // // import { protect } from "./modules/auth";
 // // import { createNewUser, signin } from "./handlers/user";
 const app = express();
