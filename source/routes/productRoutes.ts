@@ -5,6 +5,7 @@ import {
   postProduct,
   getProductsStatus,
   setProductQueryParams,
+  updateProduct,
 } from "../controllers/productController"; // Adjust path as needed
 const productRoutes = Router();
 //error handler Middleware for the router file :
@@ -14,6 +15,6 @@ const productRoutes = Router();
 productRoutes.route("/Haircares").get(setProductQueryParams, getAllProducts);
 productRoutes.route("/Products-stats").get(getProductsStatus);
 productRoutes.route("/").get(getAllProducts).post(postProduct); // Mount the controller functions to routes
-productRoutes.route("/:id").get(); // Mount the controller functions to routes
+productRoutes.route("/:id").put(updateProduct); // Mount the controller functions to routes
 
 export default productRoutes;

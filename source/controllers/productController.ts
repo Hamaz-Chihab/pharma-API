@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { ProductModel } from "../modules/product.schema";
+import { ProductModel, Product } from "../modules/product.schema";
 // import { ApiFeatures } from "../utils/ApiFeatures";
 
 export const setProductQueryParams = (
@@ -66,7 +66,7 @@ export const getAllProducts = async (req: Request, res: Response) => {
         delete queryObj[el];
       }
     });
-    console.log(excludedFields);
+    // console.log(excludedFields);
 
     // Field limiting (optional):
     let fieldsToSelect: string | undefined;
@@ -148,12 +148,15 @@ export const getAllProducts = async (req: Request, res: Response) => {
     }
 
     const products = await query.populate("promotions"); // Execute query with sorting, filtering, and (optional) field limiting
+    const productsWithVirtuals: Product[] = products.map((product) =>
+      product.toObject()
+    );
 
     // console.log("this is the products :", products);
     res.status(200).json({
       status: "success",
-      results: products.length,
-      data: products,
+      results: productsWithVirtuals.length,
+      data: productsWithVirtuals,
     });
   } catch (err) {
     console.error(err);
@@ -186,6 +189,27 @@ export const postProduct = async (req: Request, res: Response) => {
     res.status(201).json(product);
   } catch (error) {
     // Send an error response
+    res.status(500).json({ message: error });
+  }
+};
+export const updateProduct = async (req: Request, res: Response) => {
+  try {
+    // Find the product by id and update it
+    const product = await ProductModel.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
+
+    if (!product) {
+      return res.status(404).json({ message: "No product found with that ID" });
+    }
+
+    res.status(200).json(product);
+  } catch (error) {
     res.status(500).json({ message: error });
   }
 };

@@ -38,6 +38,8 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ProductModel = void 0;
 var mongoose_1 = require("mongoose");
+var slugify_1 = require("slugify");
+var mongoose_2 = require("mongoose");
 // Define the Promotion schema
 var PromotionSchema = new mongoose_1.Schema({
     type: { type: String, required: true },
@@ -47,7 +49,7 @@ var PromotionSchema = new mongoose_1.Schema({
 });
 // Define the Product schema
 var productSchema = new mongoose_1.Schema({
-    name: { type: String, required: true, trim: true },
+    name: { type: String, required: true, trim: true, unique: true, maxlength: [40, 'the max length is 40'] },
     description: { type: String, required: true },
     price: { type: Number, required: true, min: 0 },
     stockQuantity: { type: Number, required: true, min: 0 },
@@ -57,15 +59,42 @@ var productSchema = new mongoose_1.Schema({
         validate: function (val) { return val.startsWith("http"); },
     },
     createdAt: { type: Date, default: Date.now() },
+    expiryDate: { type: Date, default: null },
     category: { type: String },
     brand: { type: String, required: true, trim: true }, //trim is to delete the space in the beginning
     activeIngredients: [{ type: String, required: true }],
     dosage: String,
     promotions: [PromotionSchema],
+}, {
+    versionKey: false, // This line disables the __v field
+    toJSON: { virtuals: true }, //to make the virtual properties apeare in the json format sorted from the dataBase
+    toObject: { virtuals: true },
 });
+//query middleware with the hock of find : to manipulate the q
+productSchema.pre("find", function (next) {
+    this.find({ expiryDate: { $gte: new Date(2024, 0, 1) } });
+    next();
+});
+//virtual Propertie middleware : for the calculated data to show them in the response
+productSchema
+    .virtual("discountedPrice")
+    .get(function calculateDiscountedPrice(next) {
+    var discountedPrice = this.price;
+    if (this.promotions && this.promotions.length > 0) {
+        var promotion = this.promotions[0];
+        if (promotion.type === "discount") {
+            // Calculate the discounted price
+            var discount = promotion.value;
+            return discountedPrice * (1 - discount / 100);
+        }
+    }
+});
+//document middleware :it runs befor .save() and .create()
 productSchema.pre("save", function (next) {
     return __awaiter(this, void 0, void 0, function () {
         return __generator(this, function (_a) {
+            console.log("this is the slugify middleware👋");
+            this.brand = (0, slugify_1.default)(this.brand).toUpperCase();
             // Perform any actions before saving the document
             // For example, you could normalize images URLs or create unique slugs based on the name
             next();
@@ -73,5 +102,9 @@ productSchema.pre("save", function (next) {
         });
     });
 });
+productSchema.post("save", function (doc, next) {
+    console.log(doc);
+    next();
+});
 // Export the ProductModel
-exports.ProductModel = (0, mongoose_1.model)("Product", productSchema);
+exports.ProductModel = mongoose_2.default.model("Product", productSchema);
