@@ -21,27 +21,21 @@ export const setProductQueryParams = (
 
   next();
 };
-export const getProductStatus = async (req: Request, res: Response) => {
+export const getProductsStatus = async (req: Request, res: Response) => {
   try {
     // Define the aggregation pipeline
-    const pipeline = [
+    // Execute the aggregation pipeline
+    let productStatus = await ProductModel.aggregate([
+      { $match: {} },
       {
         $group: {
-          _id: "$price", // Set to null for overall product statistics
+          _id: null, // Set to null for overall product statistics
           totalProducts: { $sum: 1 }, // Count all products
           averagePrice: { $avg: "$price" }, // Calculate average price
-          inStock: { $sum: { $cond: [{ $gt: ["$stockQuantity", 0] }, 1, 0] } }, // Count in-stock products
-          outOfStock: {
-            $sum: { $cond: [{ $eq: ["$stockQuantity", 0] }, 1, 0] },
-          }, // Count out-of-stock products
-          // Add more aggregations as needed (e.g., total active promotions)
         },
       },
-    ];
-
-    // Execute the aggregation pipeline
-    const productStatus = await ProductModel.aggregate(pipeline);
-
+    ]);
+    console.log("this is the productStatus object ", productStatus);
     if (!productStatus.length) {
       return res.status(200).json({
         status: "success",
@@ -155,7 +149,7 @@ export const getAllProducts = async (req: Request, res: Response) => {
 
     const products = await query.populate("promotions"); // Execute query with sorting, filtering, and (optional) field limiting
 
-    console.log("this is the products :", products);
+    // console.log("this is the products :", products);
     res.status(200).json({
       status: "success",
       results: products.length,
@@ -166,7 +160,35 @@ export const getAllProducts = async (req: Request, res: Response) => {
     res.status(500).json({ error: "Failed to retrieve products" });
   }
 };
+export const postProduct = async (req: Request, res: Response) => {
+  try {
+    // Create a new product
+    const product = new ProductModel(req.body);
 
+    // Calculate the discounted price if there's a promotion
+    if (product.promotions && product.promotions.length > 0) {
+      const now = new Date();
+      product.promotions.forEach((promotion) => {
+        if (
+          promotion.type === "discount" &&
+          now >= promotion.startDate &&
+          now <= promotion.endDate
+        ) {
+          const discount = promotion.value as number;
+        }
+      });
+    }
+
+    // Save the product
+    await product.save();
+
+    // Send the product as the response
+    res.status(201).json(product);
+  } catch (error) {
+    // Send an error response
+    res.status(500).json({ message: error });
+  }
+};
 // export const getAllProducts = async (req: Request, res: Response) => {
 //   try {
 //     const apiFeatures = new ApiFeatures(req.query, req.query.toString());

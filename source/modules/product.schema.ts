@@ -33,29 +33,46 @@ const PromotionSchema = new Schema<Promotion>({
 });
 
 // Define the Product schema
-const productSchema = new Schema<Product>({
-  name: { type: String, required: true, trim: true },
-  description: { type: String, required: true },
-  price: { type: Number, required: true, min: 0 },
-  stockQuantity: { type: Number, required: true, min: 0 },
-  imageCover: {
-    type: String,
-    required: [true, "a product must have an image cover"],
-    validate: (val: string) => val.startsWith("http"),
+const productSchema = new Schema<Product>(
+  {
+    name: { type: String, required: true, trim: true },
+    description: { type: String, required: true },
+    price: { type: Number, required: true, min: 0 },
+    stockQuantity: { type: Number, required: true, min: 0 },
+    imageCover: {
+      type: String,
+      required: [true, "a product must have an image cover"],
+      validate: (val: string) => val.startsWith("http"),
+    },
+    createdAt: { type: Date, default: Date.now() },
+    category: { type: String },
+    brand: { type: String, required: true, trim: true }, //trim is to delete the space in the beginning
+    activeIngredients: [{ type: String, required: true }],
+    dosage: String,
+    promotions: [PromotionSchema],
   },
-  createdAt: { type: Date, default: Date.now() },
-  category: { type: String },
-  brand: { type: String, required: true, trim: true }, //trim is to delete the space in the beginning
-  activeIngredients: [{ type: String, required: true }],
-  dosage: String,
-  promotions: [PromotionSchema],
-});
+  { toJSON: { virtuals: true }, toObject: { virtuals: true } } //to make the virtual properties apeare in the json format sorted from the dataBase
+);  
 
-productSchema.pre("save", async function (next) {
-  // Perform any actions before saving the document
-  // For example, you could normalize images URLs or create unique slugs based on the name
-  next();
-});
-
+// productSchema.pre("save", async function (next) {
+//   // Perform any actions before saving the document
+//   // For example, you could normalize images URLs or create unique slugs based on the name
+//   next();
+// });
+productSchema
+  .virtual("discountedPrice")
+  .get(function calculateDiscountedPrice() {
+    let discountedPrice: number = this.price;
+    if (this.promotions && this.promotions.length > 0) {
+      const promotion = this.promotions[0];
+      if (promotion.type === "discount") {
+        // Calculate the discounted price
+        const discount = promotion.value as number;
+        discountedPrice = this.price * (1 - discount / 100);
+      }
+      console.log("this is the discountedPrice : ", discountedPrice);
+      return discountedPrice;
+    }
+  });
 // Export the ProductModel
 export const ProductModel = model<Product>("Product", productSchema);
