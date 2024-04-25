@@ -194,7 +194,6 @@ export const postProduct = async (req: Request, res: Response) => {
 };
 export const updateProduct = async (req: Request, res: Response) => {
   try {
-    // Find the product by id and update it
     const product = await ProductModel.findByIdAndUpdate(
       req.params.id,
       req.body,
@@ -203,6 +202,19 @@ export const updateProduct = async (req: Request, res: Response) => {
         runValidators: true,
       }
     );
+
+    if (!product) {
+      return res.status(404).json({ message: "No product found with that ID" });
+    }
+
+    res.status(200).json(product);
+  } catch (error) {
+    res.status(500).json({ message: error });
+  }
+};
+export const getProductById = async (req: Request, res: Response) => {
+  try {
+    const product = await ProductModel.findById(req.params.id);
 
     if (!product) {
       return res.status(404).json({ message: "No product found with that ID" });

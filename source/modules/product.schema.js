@@ -49,7 +49,13 @@ var PromotionSchema = new mongoose_1.Schema({
 });
 // Define the Product schema
 var productSchema = new mongoose_1.Schema({
-    name: { type: String, required: true, trim: true, unique: true, maxlength: [40, 'the max length is 40'] },
+    name: {
+        type: String,
+        required: true,
+        trim: true,
+        unique: true,
+        maxlength: [40, "the max length is 40"],
+    },
     description: { type: String, required: true },
     price: { type: Number, required: true, min: 0 },
     stockQuantity: { type: Number, required: true, min: 0 },
@@ -59,7 +65,13 @@ var productSchema = new mongoose_1.Schema({
         validate: function (val) { return val.startsWith("http"); },
     },
     createdAt: { type: Date, default: Date.now() },
-    expiryDate: { type: Date, default: null },
+    expiryDate: {
+        type: Date,
+        default: null,
+        validate: function NotNow(val) {
+            return val < this.createdAt;
+        },
+    },
     category: { type: String },
     brand: { type: String, required: true, trim: true }, //trim is to delete the space in the beginning
     activeIngredients: [{ type: String, required: true }],

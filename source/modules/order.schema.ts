@@ -9,7 +9,7 @@ interface Order {
   total_price: number;
   // Add other order-specific fields as needed
 }
-
+  
 const orderSchema = new Schema<Order>({
   pharmacist_id: {
     type: String,
