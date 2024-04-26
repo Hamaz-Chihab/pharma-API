@@ -1,4 +1,4 @@
-import express from "express";
+import express, { NextFunction } from "express";
 import morgan from "morgan";
 import bodyParser from "body-parser"; // Assuming TypeScript definitions are available
 import userRoutes from "./routes/userRoutes";
@@ -14,6 +14,15 @@ app.use(express.json());
 app.use(morgan("dev")); //morgan middleware to give a brave line of URL requested in console-line
 app.use("/api/v1/users", userRoutes); // Assuming base path for user routes is "/api/users"
 app.use("/api/v1/products", productRoutes); // Assuming base path for product routes is "/api/products"
+function handleNonExistentRoutes(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {}
+
+app.all("*", (req, res, next) => {
+  res.status(404).json({ status: "fail", massage: "Route not found" });
+});
 
 // // const customLogger = (message) => (res, req, next) => {
 // //   console.log("hello forn ${message}");
