@@ -1,6 +1,7 @@
 import { Schema, model } from "mongoose";
 import slugify from "slugify";
 import mongoose from "mongoose";
+import validator from "validator";
 // Define the exported Product interface
 export interface Product {
   name: string;
@@ -56,12 +57,17 @@ const productSchema = new Schema<Product>(
     expiryDate: {
       type: Date,
       default: null,
-      validate: function NotNow(val) {
-        return val < this.createdAt;
-      },
     },
     category: { type: String },
-    brand: { type: String, required: true, trim: true }, //trim is to delete the space in the beginning
+    brand: {
+      type: String,
+      required: true,
+      trim: true,
+      validate: [
+        validator.isAlpha,
+        "product name should contain only caracters",
+      ],
+    }, //trim is to delete the space in the beginning
     activeIngredients: [{ type: String, required: true }],
     dosage: String,
     promotions: [PromotionSchema],

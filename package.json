@@ -24,11 +24,13 @@
     "nodemon": "^3.1.0",
     "slugify": "^1.6.6",
     "ts-node": "^10.9.2",
-    "typescript": "^5.4.2"
+    "typescript": "^5.4.2",
+    "validator": "^13.11.0"
   },
   "devDependencies": {
     "@types/dotenv": "^8.2.0",
     "@types/lodash.merge": "^4.6.9",
-    "@types/mongoose": "^5.11.97"
+    "@types/mongoose": "^5.11.97",
+    "@types/validator": "^13.11.9"
   }
 }
