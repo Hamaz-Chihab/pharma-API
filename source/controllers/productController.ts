@@ -159,30 +159,33 @@ export const getAllProducts = catchAsync(
     });
   }
 );
-export const postProduct = catchAsync(async (req: Request, res: Response) => {
-  // Create a new product
-  const product = new ProductModel(req.body);
+export const postProduct = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    // Create a new product
+    const product = new ProductModel(req.body);
 
-  // Calculate the discounted price if there's a promotion
-  if (product.promotions && product.promotions.length > 0) {
-    const now = new Date();
-    product.promotions.forEach((promotion) => {
-      if (
-        promotion.type === "discount" &&
-        now >= promotion.startDate &&
-        now <= promotion.endDate
-      ) {
-        const discount = promotion.value as number;
-      }
-    });
+    // Calculate the discounted price if there's a promotion
+    if (product.promotions && product.promotions.length > 0) {
+      const now = new Date();
+      product.promotions.forEach((promotion) => {
+        if (
+          promotion.type === "discount" &&
+          now >= promotion.startDate &&
+          now <= promotion.endDate
+        ) {
+          const discount = promotion.value as number;
+        }
+      });
+    }
+
+    // Save the product
+    await product.save();
+
+    // Send the product as the response
+    res.status(201).json(product);
+    next();
   }
-
-  // Save the product
-  await product.save();
-
-  // Send the product as the response
-  res.status(201).json(product);
-});
+);
 export const updateProduct = catchAsync(async (req: Request, res: Response) => {
   const product = await ProductModel.findByIdAndUpdate(
     req.params.id,

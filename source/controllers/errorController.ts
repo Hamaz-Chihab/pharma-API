@@ -3,31 +3,48 @@ export class CustomError extends Error {
   statusCode: number; // Declare the statusCode property
   status: string | undefined;
   isOperational: boolean;
+  path: any;
+  value: any;
 
   constructor(message: string, statusCode: number) {
     super(message);
     this.statusCode = statusCode;
     this.isOperational = true;
-    this.name = "CustomError";
   }
 }
+const handleDuplicateFieldsDB = (err: CustomError) => {
+  const message = `Duplicate field value: ${err.value}. Please use a different value.`;
+  return new CustomError(message, 400);
+};
+const handelCastErrorDB = (err: CustomError) => {
+  const message = `Invalid ${err.path}: ${err.value}`;
+  return new CustomError(message, 400);
+};
+const handelValidationErrorDB = (err: CustomError) => {
+    
+  const message = `Invalid input data `;
+  return new CustomError(message, 400);
+};
 const sendErrorDev = (err: CustomError, res: Response) => {
-  res.status(err.statusCode).json({
-    err: err,
+  console.log("this is the error handler in the dev mode : ", err);
+  res.status(err.statusCode || 500).json({
     stack: err.stack,
     status: err.status,
-    massage: err.message,
+    message: err.message,
+    name: err.name,
+    err: err,
   });
 };
 const sendErrorProd = (err: CustomError, res: Response) => {
-  if (err instanceof CustomError) {
-    res.status(err.statusCode).json({
+  if (err.isOperational) {
+    console.log("this is the error handler in the production mode : ", err);
+    res.status(err.statusCode || 500).json({
       status: err.status,
-      massage: err.message,
+      message: err.message,
     });
   } else {
     console.error("ERROR 💥", err);
-    // Handle other types of errors (e.g., unexpected server errors)
+
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
@@ -37,9 +54,16 @@ export const errorHandler = (
   res: Response,
   next: NextFunction
 ) => {
-  if (process.env.NODE_ENV === "developement") {
+  if (process.env.NODE_ENV == "development") {
     sendErrorDev(err, res);
-  } else if (process.env.NODE_ENV === "production") {
+  } else if (process.env.NODE_ENV == "production") {
+    console.log("the errorHandler in production mode is exicuting  ");
+    let error = { ...err };
     sendErrorProd(err, res);
+    if (error.name === "CastError") error = handelCastErrorDB(error);
+    if (error.name === "ValidationError")
+      error = handelValidationErrorDB(error);
+    if (error.name === "MongoError") error = handleDuplicateFieldsDB(error);
+    sendErrorProd(error, res);
   }
 };

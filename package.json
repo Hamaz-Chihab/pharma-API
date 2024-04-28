@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "nodemon source/index.ts",
     "build": "tsc -p tsconfig.json",
-    "start": "node dist/index.js"
+    "start": "cross-env NODE_ENV=production node dist/index.js"
   },
   "author": "Chihab eddine Hamaz",
   "license": "ISC",
@@ -31,6 +31,7 @@
     "@types/dotenv": "^8.2.0",
     "@types/lodash.merge": "^4.6.9",
     "@types/mongoose": "^5.11.97",
-    "@types/validator": "^13.11.9"
+    "@types/validator": "^13.11.9",
+    "cross-env": "^7.0.3"
   }
 }
