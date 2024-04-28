@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { ProductModel, Product } from "../modules/product.schema";
+import { catchErrors } from "../utils/catchAsync";
 // import { ApiFeatures } from "../utils/ApiFeatures";
 
 export const setProductQueryParams = (
@@ -21,8 +22,8 @@ export const setProductQueryParams = (
 
   next();
 };
-export const getProductsStatus = async (req: Request, res: Response) => {
-  try {
+export const getProductsStatus = catchErrors(
+  async (req: Request, res: Response) => {
     // Define the aggregation pipeline
     // Execute the aggregation pipeline
     let productStatus = await ProductModel.aggregate([
@@ -49,13 +50,10 @@ export const getProductsStatus = async (req: Request, res: Response) => {
       status: "success",
       data: productStatus[0], // Assuming only one result from aggregation
     });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Failed to retrieve product status" });
   }
-};
-export const getAllProducts = async (req: Request, res: Response) => {
-  try {
+);
+export const getAllProducts = catchErrors(
+  async (req: Request, res: Response) => {
     // Advanced filtering:
     const queryObj = { ...req.query }; // Preserve original query object
 
@@ -158,42 +156,34 @@ export const getAllProducts = async (req: Request, res: Response) => {
       results: productsWithVirtuals.length,
       data: productsWithVirtuals,
     });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Failed to retrieve products" });
   }
-};
-export const postProduct = async (req: Request, res: Response) => {
-  try {
-    // Create a new product
-    const product = new ProductModel(req.body);
+);
+export const postProduct = catchErrors(async (req: Request, res: Response) => {
+  // Create a new product
+  const product = new ProductModel(req.body);
 
-    // Calculate the discounted price if there's a promotion
-    if (product.promotions && product.promotions.length > 0) {
-      const now = new Date();
-      product.promotions.forEach((promotion) => {
-        if (
-          promotion.type === "discount" &&
-          now >= promotion.startDate &&
-          now <= promotion.endDate
-        ) {
-          const discount = promotion.value as number;
-        }
-      });
-    }
-
-    // Save the product
-    await product.save();
-
-    // Send the product as the response
-    res.status(201).json(product);
-  } catch (error) {
-    // Send an error response
-    res.status(500).json({ message: error });
+  // Calculate the discounted price if there's a promotion
+  if (product.promotions && product.promotions.length > 0) {
+    const now = new Date();
+    product.promotions.forEach((promotion) => {
+      if (
+        promotion.type === "discount" &&
+        now >= promotion.startDate &&
+        now <= promotion.endDate
+      ) {
+        const discount = promotion.value as number;
+      }
+    });
   }
-};
-export const updateProduct = async (req: Request, res: Response) => {
-  try {
+
+  // Save the product
+  await product.save();
+
+  // Send the product as the response
+  res.status(201).json(product);
+});
+export const updateProduct = catchErrors(
+  async (req: Request, res: Response) => {
     const product = await ProductModel.findByIdAndUpdate(
       req.params.id,
       req.body,
@@ -208,12 +198,10 @@ export const updateProduct = async (req: Request, res: Response) => {
     }
 
     res.status(200).json(product);
-  } catch (error) {
-    res.status(500).json({ message: error });
   }
-};
-export const getProductById = async (req: Request, res: Response) => {
-  try {
+);
+export const getProductById = catchErrors(
+  async (req: Request, res: Response) => {
     const product = await ProductModel.findById(req.params.id);
 
     if (!product) {
@@ -221,10 +209,8 @@ export const getProductById = async (req: Request, res: Response) => {
     }
 
     res.status(200).json(product);
-  } catch (error) {
-    res.status(500).json({ message: error });
   }
-};
+);
 // export const getAllProducts = async (req: Request, res: Response) => {
 //   try {
 //     const apiFeatures = new ApiFeatures(req.query, req.query.toString());

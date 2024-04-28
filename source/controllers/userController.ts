@@ -1,7 +1,8 @@
 import { Request, Response } from "express";
 import { UserModel } from "../modules/user.schema";
-export const createNewUser = async (req: Request, res: Response) => {
-  try {
+import { catchErrors } from "../utils/catchAsync";
+export const createNewUser = catchErrors(
+  async (req: Request, res: Response) => {
     // // Optional Validation (using UserModel.validateSync())
     // const newUser = new UserModel(req.body);
     // const validationErrors = newUser.validateSync();
@@ -22,8 +23,5 @@ export const createNewUser = async (req: Request, res: Response) => {
         user, // Includes all fields defined in the schema
       },
     });
-  } catch (error) {
-    console.error("Error creating user:", error);
-    res.status(500).json({ status: "error", message: "creation Error" });
   }
-};
+);
