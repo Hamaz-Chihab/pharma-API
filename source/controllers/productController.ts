@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { ProductModel, Product } from "../modules/product.schema";
-import { catchErrors } from "../utils/catchAsync";
+import { catchAsync } from "../utils/catchAsync";
+import { CustomError } from "./errorController";
 // import { ApiFeatures } from "../utils/ApiFeatures";
 
 export const setProductQueryParams = (
@@ -22,7 +23,7 @@ export const setProductQueryParams = (
 
   next();
 };
-export const getProductsStatus = catchErrors(
+export const getProductsStatus = catchAsync(
   async (req: Request, res: Response) => {
     // Define the aggregation pipeline
     // Execute the aggregation pipeline
@@ -52,7 +53,7 @@ export const getProductsStatus = catchErrors(
     });
   }
 );
-export const getAllProducts = catchErrors(
+export const getAllProducts = catchAsync(
   async (req: Request, res: Response) => {
     // Advanced filtering:
     const queryObj = { ...req.query }; // Preserve original query object
@@ -158,7 +159,7 @@ export const getAllProducts = catchErrors(
     });
   }
 );
-export const postProduct = catchErrors(async (req: Request, res: Response) => {
+export const postProduct = catchAsync(async (req: Request, res: Response) => {
   // Create a new product
   const product = new ProductModel(req.body);
 
@@ -182,36 +183,34 @@ export const postProduct = catchErrors(async (req: Request, res: Response) => {
   // Send the product as the response
   res.status(201).json(product);
 });
-export const updateProduct = catchErrors(
-  async (req: Request, res: Response) => {
-    const product = await ProductModel.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      {
-        new: true,
-        runValidators: true,
-      }
-    );
-
-    if (!product) {
-      return res.status(404).json({ message: "No product found with that ID" });
+export const updateProduct = catchAsync(async (req: Request, res: Response) => {
+  const product = await ProductModel.findByIdAndUpdate(
+    req.params.id,
+    req.body,
+    {
+      new: true,
+      runValidators: true,
     }
+  );
 
-    res.status(200).json(product);
+  if (!product) {
+    return res.status(404).json({ message: "No product found with that ID" });
   }
-);
-export const getProductById = catchErrors(
-  async (req: Request, res: Response) => {
+
+  res.status(200).json(product);
+});
+export const getProductById = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
     const product = await ProductModel.findById(req.params.id);
 
     if (!product) {
-      return res.status(404).json({ message: "No product found with that ID" });
+      return next(new CustomError("No product found with that ID", 404));
     }
 
-    res.status(200).json(product);
+    res.status(200).json({ status: "success", message: product });
   }
 );
-// export const getAllProducts = async (req: Request, res: Response) => {
+
 //   try {
 //     const apiFeatures = new ApiFeatures(req.query, req.query.toString());
 

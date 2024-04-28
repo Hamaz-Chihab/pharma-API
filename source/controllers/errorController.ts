@@ -11,20 +11,35 @@ export class CustomError extends Error {
     this.name = "CustomError";
   }
 }
-export const errorHandler = (
-  err: Error,
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+const sendErrorDev = (err: CustomError, res: Response) => {
+  res.status(err.statusCode).json({
+    err: err,
+    stack: err.stack,
+    status: err.status,
+    massage: err.message,
+  });
+};
+const sendErrorProd = (err: CustomError, res: Response) => {
   if (err instanceof CustomError) {
     res.status(err.statusCode).json({
       status: err.status,
       massage: err.message,
     });
   } else {
+    console.error("ERROR 💥", err);
     // Handle other types of errors (e.g., unexpected server errors)
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
-
+export const errorHandler = (
+  err: CustomError,
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  if (process.env.NODE_ENV === "developement") {
+    sendErrorDev(err, res);
+  } else if (process.env.NODE_ENV === "production") {
+    sendErrorProd(err, res);
+  }
+};
