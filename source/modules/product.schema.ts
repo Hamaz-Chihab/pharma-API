@@ -18,7 +18,13 @@ export interface Product {
   dosage?: string;
   promotions?: Promotion[];
 }
-
+const brandValidator = {
+  validator: function (value: string) {
+    // Custom validation logic: Allow only letters and spaces
+    return /^[A-Za-z\s]+$/.test(value);
+  },
+  message: "Brand should contain only characters and spaces",
+};
 // Define the exported Promotion interface
 export interface Promotion {
   type: string; // e.g., "discount", "bundle"
@@ -56,17 +62,21 @@ const productSchema = new Schema<Product>(
     createdAt: { type: Date, default: Date.now() },
     expiryDate: {
       type: Date,
-      default: null,
+      required: true,
+      validate: {
+        validator: function (value: Date) {
+          // Custom validation logic: Check if expiryDate is in the future
+          return value >= new Date();
+        },
+        message: "Expiry date must be in the future",
+      },
     },
     category: { type: String },
     brand: {
       type: String,
       required: true,
       trim: true,
-      validate: [
-        validator.isAlpha,
-        "product name should contain only caracters",
-      ],
+      validate: brandValidator,
     }, //trim is to delete the space in the beginning
     activeIngredients: [{ type: String, required: true }],
     dosage: String,
@@ -79,10 +89,10 @@ const productSchema = new Schema<Product>(
   }
 );
 //query middleware with the hock of find : to manipulate the q
-productSchema.pre("find", function (next) {
-  this.find({ expiryDate: { $gte: new Date(2024, 0, 1) } });
-  next();
-});
+// productSchema.pre("find", function (next) {
+//   this.find({ expiryDate: { $gte: new Date(2024, 0, 1) } });
+//   next();
+// });
 //virtual Propertie middleware : for the calculated data to show them in the response
 productSchema
   .virtual("discountedPrice")

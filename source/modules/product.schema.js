@@ -40,6 +40,13 @@ exports.ProductModel = void 0;
 var mongoose_1 = require("mongoose");
 var slugify_1 = require("slugify");
 var mongoose_2 = require("mongoose");
+var brandValidator = {
+    validator: function (value) {
+        // Custom validation logic: Allow only letters and spaces
+        return /^[A-Za-z\s]+$/.test(value);
+    },
+    message: "Brand should contain only characters and spaces",
+};
 // Define the Promotion schema
 var PromotionSchema = new mongoose_1.Schema({
     type: { type: String, required: true },
@@ -67,13 +74,22 @@ var productSchema = new mongoose_1.Schema({
     createdAt: { type: Date, default: Date.now() },
     expiryDate: {
         type: Date,
-        default: null,
-        validate: function NotNow(val) {
-            return val < this.createdAt;
+        required: true,
+        validate: {
+            validator: function (value) {
+                // Custom validation logic: Check if expiryDate is in the future
+                return value >= new Date();
+            },
+            message: "Expiry date must be in the future",
         },
     },
     category: { type: String },
-    brand: { type: String, required: true, trim: true }, //trim is to delete the space in the beginning
+    brand: {
+        type: String,
+        required: true,
+        trim: true,
+        validate: brandValidator,
+    }, //trim is to delete the space in the beginning
     activeIngredients: [{ type: String, required: true }],
     dosage: String,
     promotions: [PromotionSchema],
@@ -83,10 +99,10 @@ var productSchema = new mongoose_1.Schema({
     toObject: { virtuals: true },
 });
 //query middleware with the hock of find : to manipulate the q
-productSchema.pre("find", function (next) {
-    this.find({ expiryDate: { $gte: new Date(2024, 0, 1) } });
-    next();
-});
+// productSchema.pre("find", function (next) {
+//   this.find({ expiryDate: { $gte: new Date(2024, 0, 1) } });
+//   next();
+// });
 //virtual Propertie middleware : for the calculated data to show them in the response
 productSchema
     .virtual("discountedPrice")
