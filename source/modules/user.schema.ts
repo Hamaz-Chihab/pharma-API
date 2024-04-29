@@ -1,19 +1,38 @@
-import { Schema, model } from "mongoose";
-import { ObjectId } from "mongoose"; // For foreign key reference (if needed)
+import mongoose, { Schema, model, Document } from "mongoose";
+import validator from "validator";
 
-interface User {
-  name: string;
+// Define the User schema
+interface User extends Document {
+  username: string;
   email: string;
+  photo?: string; // Make photo optional
   password: string; // Hashed for security
+  passwordConfirm: string;
   role: "pharmacy_staff" | "admin";
+  orders: mongoose.Types.ObjectId[]; // Reference to Order documents
 }
 
 const userSchema = new Schema<User>({
-  name: { type: String, required: true },
-  email: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-  role: { type: String, enum: ["pharmacy_staff", "admin"], required: true },
-  // Add other schema definitions for user fields
+  username: { type: String, required: true },
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+    lowercase: true,
+    validate: [validator.isEmail, "Please provide a valid email"],
+  },
+  photo: { type: String }, // Optional photo field
+  password: { type: String, required: true, minlength: 8 },
+  passwordConfirm: {
+    type: String,
+    required: [true, "Please confirm your password"],
+  },
+  role: {
+    type: String,
+    enum: ["pharmacy_staff", "admin"],
+    required: true,
+  },
+  orders: [{ type: mongoose.Schema.Types.ObjectId, ref: "Order" }],
 });
 
 export const UserModel = model<User>("User", userSchema);
