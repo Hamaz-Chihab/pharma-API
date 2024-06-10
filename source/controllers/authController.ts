@@ -1,5 +1,4 @@
-
-import { Request, Response } from "express";
+import { Request, Response, Router } from "express";
 import { UserModel } from "../modules/user.schema";
 import { catchAsync } from "../utils/catchAsync";
 export const signup = catchAsync(async (req: Request, res: Response) => {
@@ -9,7 +8,10 @@ export const signup = catchAsync(async (req: Request, res: Response) => {
   res.status(201).json({
     status: "success",
     data: {
-      user, // Includes all fields defined in the schema
+      user: user, // Includes all fields defined in the schema
     },
   });
 });
+export const authController = {
+  signup,
+};

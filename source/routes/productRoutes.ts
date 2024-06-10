@@ -1,19 +1,22 @@
 import { Router } from "express";
-
-import {
-  getAllProducts,
-  postProduct,
-  getProductsStatus,
-  setProductQueryParams,
-  updateProduct,
-  getProductById,
-} from "../controllers/productController";
+import { productController } from "../controllers/productController";
 const productRoutes = Router();
 
 //product routes :
-productRoutes.route("/Haircares").get(setProductQueryParams, getAllProducts);
-productRoutes.route("/Products-stats").get(getProductsStatus);
-productRoutes.route("/").get(getAllProducts).post(postProduct);
-productRoutes.route("/:id").patch(updateProduct).get(getProductById);
+productRoutes
+  .route("/Haircares")
+  .get(
+    productController.setProductQueryParams,
+    productController.getAllProducts
+  );
+productRoutes.route("/Products-stats").get(productController.getProductsStatus);
+productRoutes
+  .route("/")
+  .get(productController.getAllProducts)
+  .post(productController.postProduct);
+productRoutes
+  .route("/:id")
+  .patch(productController.updateProduct)
+  .get(productController.getProductById);
 
 export default productRoutes;

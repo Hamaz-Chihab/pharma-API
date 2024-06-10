@@ -28,6 +28,7 @@ const userSchema = new Schema<User>(
       type: String,
       required: [true, "Please confirm your password"],
       validate: {
+        //excute only in the create user and save user methode
         validator: function (this: User, el: string): boolean {
           // this works only on SAVE
           return el === this.password;
@@ -55,4 +56,5 @@ userSchema.pre("save", async function (this: User, next) {
   this.passwordConfirm = "";
   next();
 });
+
 export const UserModel = model<User>("User", userSchema);
