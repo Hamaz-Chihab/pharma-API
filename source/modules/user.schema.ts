@@ -39,7 +39,7 @@ const userSchema = new Schema<User>(
     role: {
       type: String,
       enum: ["pharmacy_staff", "admin"],
-      required: true,
+      required: false,
     },
     orders: [{ type: mongoose.Schema.Types.ObjectId, ref: "Order" }],
   },
@@ -51,8 +51,11 @@ const userSchema = new Schema<User>(
 );
 //document middleware :it runs befor .save() and .create()
 userSchema.pre("save", async function (this: User, next) {
-  if (this.isModified("password")) return next();
+  //only when the password is modified
+  // if (this.isModified("password")) return next();
+  //Hash the password
   this.password = await bcrypt.hash(this.password, 12);
+  //delete the passwordConfirm field
   this.passwordConfirm = "";
   next();
 });
