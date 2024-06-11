@@ -23,7 +23,7 @@ const userSchema = new Schema<User>(
       validate: [validator.isEmail, "Please provide a valid email"],
     },
     photo: { type: String }, // Optional photo field
-    password: { type: String, required: true, minlength: 8 },
+    password: { type: String, required: true, minlength: 8, select: false }, //select : false <=> never showup in any output
     passwordConfirm: {
       type: String,
       required: [true, "Please confirm your password"],
@@ -39,7 +39,7 @@ const userSchema = new Schema<User>(
     role: {
       type: String,
       enum: ["pharmacy_staff", "admin"],
-      required: false,
+      required: true,
     },
     orders: [{ type: mongoose.Schema.Types.ObjectId, ref: "Order" }],
   },
