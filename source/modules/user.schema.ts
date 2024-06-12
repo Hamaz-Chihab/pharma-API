@@ -2,7 +2,8 @@ import mongoose, { Schema, model, Document } from "mongoose";
 import validator from "validator";
 import * as bcrypt from "bcrypt";
 // Define the User schema
-interface User extends Document {
+export interface User extends Document {
+  isCorrectPassword: any;
   username: string;
   email: string;
   photo?: string; // Make photo optional
@@ -67,4 +68,4 @@ userSchema.methods.isCorrectPassword = async function (
   return await bcrypt.compare(condidatePassword, userPassword);
 };
 
-export const UserModel = model<User>("User", userSchema);
+export const UserModel = mongoose.model<User>("User", userSchema);

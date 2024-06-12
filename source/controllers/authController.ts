@@ -1,9 +1,14 @@
 import jwt from "jsonwebtoken";
 import config from "../config";
 import { NextFunction, Request, Response, Router } from "express";
-import { UserModel } from "../modules/user.schema";
+import { UserModel, User } from "../modules/user.schema";
 import { catchAsync } from "../utils/catchAsync";
 import { CustomError } from "./errorController";
+const signToken = (id: unknown) => {
+  return jwt.sign({ id: id }, config.secrets.jwt, {
+    expiresIn: config.secrets.jwt_expired_date,
+  });
+};
 const signup = catchAsync(async (req: Request, res: Response) => {
   const newUser = await UserModel.create({
     username: req.body.username,
@@ -19,10 +24,7 @@ const signup = catchAsync(async (req: Request, res: Response) => {
   //   config.secrets.JWT_SECRET,
   //   config.secrets.JWT_EXPIRES_IN
   // );
-  const token = jwt.sign({ id: newUser._id }, config.secrets.jwt, {
-    expiresIn: config.secrets.jwt_expired_date,
-  });
-
+  const token = signToken(newUser._id);
   // Respond with Success and User Data
   res.status(201).json({
     status: "success",
@@ -35,13 +37,21 @@ const signup = catchAsync(async (req: Request, res: Response) => {
 const login = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const { email, password } = req.body;
-    //check if email and password exist
+
+    // Check if email and password exist
     if (!email || !password) {
-      return next(new CustomError("please provide email and password ! ", 400));
+      return next(new CustomError("Please provide email and password!", 400));
     }
-    const user = UserModel.findOne({ email }).select("+ password"); //select("+password")to have  password in the output
-    const isCorrect = await user.isCorrectPassword(password, user.password);
-    const token = "";
+    // Find user by email and select the password field
+    const user: User | null = await UserModel.findOne({ email }).select(
+      "+password"
+    );
+
+    // If user doesn't exist or password is incorrect, throw an error
+    if (!user || !(await user.isCorrectPassword(password, user.password))) {
+      return next(new CustomError("Incorrect email or password", 401));
+    }
+    const token = signToken(user._id);
     res.status(200).json({
       status: "success",
       token: token,
