@@ -39,7 +39,8 @@ const login = catchAsync(
     if (!email || !password) {
       return next(new CustomError("please provide email and password ! ", 400));
     }
-    const user = UserModel.findOne({email})
+    const user = UserModel.findOne({ email }).select("+ password"); //select("+password")to have  password in the output
+    const isCorrect = await user.isCorrectPassword(password, user.password);
     const token = "";
     res.status(200).json({
       status: "success",

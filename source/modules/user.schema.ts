@@ -59,5 +59,12 @@ userSchema.pre("save", async function (this: User, next) {
   this.passwordConfirm = "";
   next();
 });
+//instance methode that return true or false  :
+userSchema.methods.isCorrectPassword = async function (
+  condidatePassword: string,
+  userPassword: string
+) {
+  return await bcrypt.compare(condidatePassword, userPassword);
+};
 
 export const UserModel = model<User>("User", userSchema);
