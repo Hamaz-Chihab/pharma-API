@@ -1,11 +1,13 @@
 import jwt from "jsonwebtoken";
 import config from "../config";
+import { promisify } from "util";
+
 import { NextFunction, Request, Response, Router } from "express";
 import { UserModel, User } from "../modules/user.schema";
 import { catchAsync } from "../utils/catchAsync";
 import { CustomError } from "./errorController";
 const signToken = (id: unknown) => {
-  return jwt.sign({ id: id }, config.secrets.jwt, {
+  return jwt.sign({ id: id }, config.secrets.jwt_secret, {
     expiresIn: config.secrets.jwt_expired_date,
   });
 };
@@ -58,7 +60,33 @@ const login = catchAsync(
     });
   }
 );
+const protect = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    //1)getting token and check of it's there
+    let token;
+    if (
+      req.headers.authorization &&
+      req.headers.authorization.startsWith("Bearer")
+    ) {
+      token = req.headers.authorization.split(" ")[1];
+    }
+    console.log(token);
+    if (!token) {
+      return next(
+        new CustomError("you are not logged in ! please log in to access", 401)
+      );
+    }
+    //2)virefication token
+    const decoded = await promisify(jwt.verify)(
+      token,
+      config.secrets.jwt_secret
+    );
+    //3)check if user still exists
+    //4)check if user change password after the token wa s issued
+  }
+);
 export const authController = {
   signup,
   login,
+  protect,
 };

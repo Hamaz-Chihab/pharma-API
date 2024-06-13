@@ -1,5 +1,7 @@
 import { Router } from "express";
 import { productController } from "../controllers/productController";
+import { authController } from "../controllers/authController";
+
 const productRoutes = Router();
 
 //product routes :
@@ -12,7 +14,7 @@ productRoutes
 productRoutes.route("/Products-stats").get(productController.getProductsStatus);
 productRoutes
   .route("/")
-  .get(productController.getAllProducts)
+  .get(authController.protect, productController.getAllProducts)
   .post(productController.postProduct);
 productRoutes
   .route("/:id")

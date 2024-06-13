@@ -1,44 +1,43 @@
-import * as dotenv from "dotenv";
-dotenv.config();
-import app from "./server"; // Assuming 'app' is your HTTP server instance
-import config from "./config";
-import mongoose from "mongoose";
-import { CustomError } from "./controllers/errorController";
-// process.on("unhandledRejection", (err: CustomError) => {
-//   console.error("UNHANDLED REJECTION 💥");
-//   console.error(err.name, err.message);
-//   process.exit(1);
+import express, { NextFunction } from "express";
+import morgan from "morgan";
+import bodyParser from "body-parser"; // Assuming TypeScript definitions are available
+import userRoutes from "./routes/userRoutes";
+import productRoutes from "./routes/productRoutes";
+import { errorHandler, CustomError } from "./controllers/errorController"; // Adjust the path as needed
+// // import router from "./routes";
+// import morgan from "morgan";
+// const { check, validationResult } = require("express-validator");
+// // import { protect } from "./modules/auth";
+// // import { createNewUser, signin } from "./handlers/user";
+const app = express();
+
+app.use(bodyParser.json()); // Parse JSON request bodies very important to have the req and the res contain some thing
+app.use(express.json());
+app.use(morgan("dev")); //morgan middleware to give a brave line of URL requested in console-line
+app.use("/api/v1/users", userRoutes); // Assuming base path for user routes is "/api/users"
+app.use("/api/v1/products", productRoutes); // Assuming base path for product routes is "/api/products"
+
+app.use(errorHandler);
+
+app.use((req, res, next) => {
+  const err = new CustomError("Route not found", 404);
+  err.status = "fail";
+  err.statusCode = 404;
+  console.log("the custom error handling middleware is activated");
+  next(err);
+});
+
+// Global error handler middleware
+app.use(errorHandler);
+
+// Global error handler middleware
+// app.use((err, req, res, next) => {
+//   err.status = err.status || "error";
+//   err.statusCode = err.statusCode || 500;
+//   res.status(err.statusCode).json({
+//     status: err.status,
+//     message: err.message,
+//   });
 // });
-// process.on("unhandledRejection", (err: CustomError) => {
-//   console.error("UNCAUGHT REJECTION 💥");
-//   console.error(err.name, err.message);
-//   process.exit(1);
-// });
 
-// Access the database URL from the nested secrets object
-const DB = config.secrets.dbUrl;
-
-mongoose.connect(DB).then((con) => {
-  // console.log(con.connection);
-  console.log("MongoDB connected");
-});
-const server = app.listen(config.port, () => {
-  console.log(`Hello on http://localhost:${config.port}`);
-  console.log("The server is opened NOW");
-});
-// Handle unhandled promise rejections
-process.on("unhandledRejection", (err: Error) => {
-  console.error("UNHANDLED REJECTION 💥");
-  console.error(err.name, err.message);
-  server.close(() => {
-    console.log("Server closed. Exiting process.");
-    process.exit(1);
-  });
-});
-
-// Handle uncaught exceptions
-process.on("uncaughtException", (err: Error) => {
-  console.error("UNCAUGHT EXCEPTION 💥");
-  console.error(err.name, err.message);
-  process.exit(1);
-});
+export default app;
