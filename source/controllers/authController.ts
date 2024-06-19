@@ -1,11 +1,23 @@
 import jwt from "jsonwebtoken";
 import config from "../config";
 import { promisify } from "util";
-
 import { NextFunction, Request, Response, Router } from "express";
 import { UserModel, User } from "../modules/user.schema";
 import { catchAsync } from "../utils/catchAsync";
 import { CustomError } from "./errorController";
+// Define the Value type (adjust as needed)
+type Value = number;
+
+// Create the operationMap
+const operationMap = new Map([
+  [
+    "+",
+    (Left: Value, Right: Value): Value => {
+      return Left + Right; // Your logic here...
+    },
+  ],
+  // Add other operations as needed
+]);
 const signToken = (id: unknown) => {
   return jwt.sign({ id: id }, config.secrets.jwt_secret, {
     expiresIn: config.secrets.jwt_expired_date,
@@ -77,10 +89,22 @@ const protect = catchAsync(
       );
     }
     //2)virefication token
-    const decoded = await promisify(jwt.verify)(
-      token,
-      config.secrets.jwt_secret
-    );
+    const jwtVerifyPromisified = (token: string, secret: string) => {
+      return new Promise((resolve, reject) => {
+        jwt.verify(token, secret, {}, (err, payload) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(payload);
+          }
+        });
+      });
+    };
+    
+    // Usage
+    const decoded = await jwtVerifyPromisified(token, config.secrets.jwt_secret);
+    console.log(decoded);
+
     //3)check if user still exists
     //4)check if user change password after the token wa s issued
   }
