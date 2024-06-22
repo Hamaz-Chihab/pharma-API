@@ -6,6 +6,7 @@ import { UserModel, User } from "../modules/user.schema";
 import { catchAsync } from "../utils/catchAsync";
 import { CustomError } from "./errorController";
 // Define the Value type (adjust as needed)
+
 type Value = number;
 
 // Create the operationMap
@@ -89,9 +90,12 @@ const protect = catchAsync(
       );
     }
     //2)virefication token
-    const jwtVerifyPromisified = (token: string, secret: string) => {
+    const jwtVerifyPromisified = (
+      token: string,
+      secret: string
+    ): Promise<any> => {
       return new Promise((resolve, reject) => {
-        jwt.verify(token, secret, {}, (err, payload) => {
+        jwt.verify(token, secret, (err, payload) => {
           if (err) {
             reject(err);
           } else {
@@ -106,11 +110,34 @@ const protect = catchAsync(
       token,
       config.secrets.jwt_secret
     );
-    // console.log(decoded);
-    next;
+    console.log(decoded.id);
+    // 3)check if user still exists
+    const currentUser = await UserModel.findById(decoded.id);
+    if (!currentUser) {
+      return next(
+        new CustomError(
+          "the user belonging to this token does not longer exist",
+          401
+        )
+      );
+    }
 
-    //3)check if user still exists
     //4)check if user change password after the token wa s issued
+    if (currentUser.changePasswordAfter(decoded.iat)) {
+      // Password was changed after token issuance
+      return next(
+        new CustomError(
+          "User recently changed password ! Please log in again",
+          401
+        )
+      );
+      // Proceed with the next middleware or additional checks
+    } else {
+      // Handle the case where the password was not changed
+    }
+    //GRANT ACCESS TO PROTECTED ROUTE
+    req.body = currentUser;
+    next();
   }
 );
 export const authController = {

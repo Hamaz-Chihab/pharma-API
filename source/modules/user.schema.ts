@@ -3,7 +3,11 @@ import validator from "validator";
 import * as bcrypt from "bcrypt";
 // Define the User schema
 export interface User extends Document {
-  isCorrectPassword: any;
+  changePasswordAfter(JWTTimestamp: number): boolean;
+  isCorrectPassword(
+    candidatePassword: string,
+    userPassword: string
+  ): Promise<boolean>;
   username: string;
   email: string;
   photo?: string; // Make photo optional
@@ -11,6 +15,7 @@ export interface User extends Document {
   passwordConfirm: string;
   role: "pharmacy_staff" | "admin";
   orders: mongoose.Types.ObjectId[]; // Reference to Order documents
+  passwordChangedAt: Date;
 }
 
 const userSchema = new Schema<User>(
@@ -43,7 +48,12 @@ const userSchema = new Schema<User>(
       required: true,
     },
     orders: [{ type: mongoose.Schema.Types.ObjectId, ref: "Order" }],
+    passwordChangedAt: {
+      type: Date,
+      required: false,
+    },
   },
+
   {
     versionKey: false, // This line disables the __v field
     toJSON: { virtuals: true }, //to make the virtual properties apeare in the json format sorted from the dataBase
@@ -60,6 +70,13 @@ userSchema.pre("save", async function (this: User, next) {
   this.passwordConfirm = "";
   next();
 });
+userSchema.methods.changePassworddAfter = function (JWTTimestamp: number) {
+  if (this.passwordChangedAt) {
+    const changeTimestamp = Math.floor(this.passwordChangedAt.getTime() / 1000);
+    return JWTTimestamp < changeTimestamp;
+  }
+  return false;
+};
 //instance methode that return true or false  :
 userSchema.methods.isCorrectPassword = async function (
   condidatePassword: string,
