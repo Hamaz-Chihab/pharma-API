@@ -82,7 +82,7 @@ const protect = catchAsync(
     ) {
       token = req.headers.authorization.split(" ")[1];
     }
-    console.log(token);
+    // console.log(token);
     if (!token) {
       return next(
         new CustomError("you are not logged in ! please log in to access", 401)
@@ -100,10 +100,14 @@ const protect = catchAsync(
         });
       });
     };
-    
+
     // Usage
-    const decoded = await jwtVerifyPromisified(token, config.secrets.jwt_secret);
-    console.log(decoded);
+    const decoded = await jwtVerifyPromisified(
+      token,
+      config.secrets.jwt_secret
+    );
+    // console.log(decoded);
+    next;
 
     //3)check if user still exists
     //4)check if user change password after the token wa s issued

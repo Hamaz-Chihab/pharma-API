@@ -12,6 +12,15 @@ export class CustomError extends Error {
     this.isOperational = true;
   }
 }
+const handJWTError = (err: CustomError) => {
+  const message = `invalid token ${err.value}. Please log in again`;
+  return new CustomError(message, 401);
+};
+const handJWTExpError = (err: CustomError) => {
+  const message = `expired token ${err.value}. Please log in again`;
+  return new CustomError(message, 401);
+};
+
 const handleDuplicateFieldsDB = (err: CustomError) => {
   const message = `Duplicate field value: ${err.value}. Please use a different value.`;
   return new CustomError(message, 400);
@@ -21,11 +30,10 @@ const handelCastErrorDB = (err: CustomError) => {
   return new CustomError(message, 400);
 };
 const handelValidationErrorDB = (err: CustomError) => {
-    
   const message = `Invalid input data `;
   return new CustomError(message, 400);
 };
-const sendErrorDev = (err: CustomError, res: Response) => {
+const sendErrorDevMode = (err: CustomError, res: Response) => {
   console.log("this is the error handler in the dev mode : ", err);
   res.status(err.statusCode || 500).json({
     stack: err.stack,
@@ -35,7 +43,7 @@ const sendErrorDev = (err: CustomError, res: Response) => {
     err: err,
   });
 };
-const sendErrorProd = (err: CustomError, res: Response) => {
+const sendErrorProdMode = (err: CustomError, res: Response) => {
   if (err.isOperational) {
     console.log("this is the error handler in the production mode : ", err);
     res.status(err.statusCode || 500).json({
@@ -55,15 +63,16 @@ export const errorHandler = (
   next: NextFunction
 ) => {
   if (process.env.NODE_ENV == "development") {
-    sendErrorDev(err, res);
+    sendErrorDevMode(err, res);
   } else if (process.env.NODE_ENV == "production") {
     console.log("the errorHandler in production mode is exicuting  ");
     let error = { ...err };
-    sendErrorProd(err, res);
     if (error.name === "CastError") error = handelCastErrorDB(error);
     if (error.name === "ValidationError")
       error = handelValidationErrorDB(error);
     if (error.name === "MongoError") error = handleDuplicateFieldsDB(error);
-    sendErrorProd(error, res);
+    if (error.name === "JsonWebTokenError") error = handJWTError(error);
+    if (error.name === "TokenExpiredError") error = handJWTExpError(error);
+    sendErrorProdMode(error, res);
   }
 };
