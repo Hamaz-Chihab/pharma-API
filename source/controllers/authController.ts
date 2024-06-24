@@ -113,6 +113,7 @@ const protect = catchAsync(
     console.log(decoded.id);
     // 3)check if user still exists
     const currentUser = await UserModel.findById(decoded.id);
+    console.log("this is currentUser var : ", currentUser);
     if (!currentUser) {
       return next(
         new CustomError(
@@ -123,6 +124,11 @@ const protect = catchAsync(
     }
 
     //4)check if user change password after the token wa s issued
+    console.log(
+      "this is result var : ",
+      currentUser.changePasswordAfter(decoded.iat)
+    );
+
     if (currentUser.changePasswordAfter(decoded.iat)) {
       // Password was changed after token issuance
       return next(
@@ -131,9 +137,8 @@ const protect = catchAsync(
           401
         )
       );
-      // Proceed with the next middleware or additional checks
-    } else {
-      // Handle the case where the password was not changed
+
+      //   // Handle the case where the password was not changed
     }
     //GRANT ACCESS TO PROTECTED ROUTE
     req.body = currentUser;

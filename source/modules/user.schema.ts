@@ -70,9 +70,10 @@ userSchema.pre("save", async function (this: User, next) {
   this.passwordConfirm = "";
   next();
 });
-userSchema.methods.changePassworddAfter = function (JWTTimestamp: number) {
+userSchema.methods.changePasswordAfter = function (JWTTimestamp: number) {
   if (this.passwordChangedAt) {
     const changeTimestamp = Math.floor(this.passwordChangedAt.getTime() / 1000);
+    console.log(JWTTimestamp, changeTimestamp);
     return JWTTimestamp < changeTimestamp;
   }
   return false;
