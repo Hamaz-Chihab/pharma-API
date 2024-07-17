@@ -19,6 +19,6 @@ productRoutes
 productRoutes
   .route("/:id")
   .patch(productController.updateProduct)
-  .get(productController.getProductById);
+  .get(authController.protect, productController.getProductById);
 
 export default productRoutes;

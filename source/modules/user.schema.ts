@@ -66,14 +66,13 @@ userSchema.pre("save", async function (this: User, next) {
   // if (this.isModified("password")) return next();
   //Hash the password
   this.password = await bcrypt.hash(this.password, 12);
-  //delete the passwordConfirm field
+  //delete the passwordConfirm field :
   this.passwordConfirm = "";
   next();
 });
 userSchema.methods.changePasswordAfter = function (JWTTimestamp: number) {
   if (this.passwordChangedAt) {
     const changeTimestamp = Math.floor(this.passwordChangedAt.getTime() / 1000);
-    console.log(JWTTimestamp, changeTimestamp);
     return JWTTimestamp < changeTimestamp;
   }
   return false;

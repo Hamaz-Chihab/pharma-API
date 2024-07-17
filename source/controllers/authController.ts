@@ -43,8 +43,8 @@ const signup = catchAsync(async (req: Request, res: Response) => {
   // Respond with Success and User Data
   res.status(201).json({
     status: "success",
+    token: token,
     data: {
-      token: token,
       user: newUser, // Includes all fields defined in the schema
     },
   });
