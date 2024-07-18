@@ -140,13 +140,27 @@ const protect = catchAsync(
 
       //   // Handle the case where the password was not changed
     }
-    //GRANT ACCESS TO PROTECTED ROUTE
+    //GRANT ACCESS TO PROTECTED ROUTE and it is very important to the midllware restrictTo()
     req.body = currentUser;
     next();
   }
 );
+const restrictTo = (...roles: string[]) => {
+  return (req: Request, res: Response, next: NextFunction) => {
+    console.log("💀💀" + JSON.stringify(req.body) + "💀💀");
+    if (!roles.includes(req.body.role)) {
+      return next(
+        new CustomError(
+          "You do not have permission to perform this action",
+          403
+        )
+      );
+    } else next();
+  };
+};
 export const authController = {
   signup,
   login,
   protect,
+  restrictTo,
 };

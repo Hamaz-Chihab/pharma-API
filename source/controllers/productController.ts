@@ -210,6 +210,18 @@ const getProductById = catchAsync(
     res.status(200).json({ status: "success", message: product });
   }
 );
+const deleteProductById = catchAsync(async (req: Request, res: Response) => {
+  const product = await ProductModel.findByIdAndDelete(req.params.id, req.body);
+
+  if (!product) {
+    return res.status(404).json({ message: "No product found with that ID" });
+  }
+
+  res.status(200).json({
+    status: "delete success",
+    data: product, // Assuming only one result from aggregation
+  });
+});
 
 //   try {
 //     const apiFeatures = new ApiFeatures(req.query, req.query.toString());
@@ -241,4 +253,5 @@ export const productController = {
   postProduct,
   updateProduct,
   getProductById,
+  deleteProductById,
 };

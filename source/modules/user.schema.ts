@@ -44,7 +44,7 @@ const userSchema = new Schema<User>(
     },
     role: {
       type: String,
-      enum: ["pharmacy_staff", "admin"],
+      enum: ["pharmacy_staff", "admin", "visitor"],
       required: true,
     },
     orders: [{ type: mongoose.Schema.Types.ObjectId, ref: "Order" }],
