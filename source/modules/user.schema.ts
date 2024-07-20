@@ -1,6 +1,8 @@
 import mongoose, { Schema, model, Document } from "mongoose";
 import validator from "validator";
 import * as bcrypt from "bcrypt";
+import * as crypto from "crypto";
+
 // Define the User schema
 export interface User extends Document {
   changePasswordAfter(JWTTimestamp: number): boolean;
@@ -8,6 +10,8 @@ export interface User extends Document {
     candidatePassword: string,
     userPassword: string
   ): Promise<boolean>;
+  creatPasswordResetToken: any;
+
   username: string;
   email: string;
   photo?: string; // Make photo optional
@@ -16,6 +20,8 @@ export interface User extends Document {
   role: "pharmacy_staff" | "admin";
   orders: mongoose.Types.ObjectId[]; // Reference to Order documents
   passwordChangedAt: Date;
+  passwordResetToken: String;
+  passwordRestExpires: Date;
 }
 
 const userSchema = new Schema<User>(
@@ -52,6 +58,11 @@ const userSchema = new Schema<User>(
       type: Date,
       required: false,
     },
+    passwordResetToken: { type: String, required: false },
+    passwordRestExpires: {
+      type: Date,
+      required: false,
+    },
   },
 
   {
@@ -84,5 +95,28 @@ userSchema.methods.isCorrectPassword = async function (
 ) {
   return await bcrypt.compare(condidatePassword, userPassword);
 };
+userSchema.methods.creatPasswordResetToken = async function () {
+  // the methode with bcrypt:
 
+  const saltRounds = 10;
+  const salt = await bcrypt.genSalt(saltRounds); //salt is a random value used to enhance the security of the password hash
+  const resetToken = crypto.randomBytes(32).toString("hex");
+  this.passwordResetToken = await bcrypt.hash(resetToken, salt);
+
+  // const resetToken = crypto.randomBytes(32).toString("hex");
+  // this.passwordResetToken = crypto
+  //   .createHash("sha256")
+  //   .update(resetToken)
+  //   .digest("hex");
+
+  console.log("this is reseteToken without hashing :" + resetToken);
+  console.log(
+    "this is the resetToken password (hashed) :👽👽 " + this.passwordResetToken
+  );
+  this.passwordRestExpires = Date.now() + 10 * 60 * 1000;
+  console.log(
+    "the date of experation of passwordRested : " + this.passwordRestExpires
+  );
+  return resetToken;
+};
 export const UserModel = mongoose.model<User>("User", userSchema);

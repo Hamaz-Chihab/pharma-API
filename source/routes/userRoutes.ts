@@ -12,4 +12,7 @@ userRoutes.post("/login", authController.login);
 userRoutes.route("/").get().post(userController.createNewUser);
 userRoutes.route("/:id").patch().get(userController.getUserById);
 
+userRoutes.post("/forgotPassword", authController.forgotPassword);
+userRoutes.post("/reserPassword", authController.resetPassword);
+
 export default userRoutes;

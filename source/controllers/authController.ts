@@ -147,7 +147,9 @@ const protect = catchAsync(
 );
 const restrictTo = (...roles: string[]) => {
   return (req: Request, res: Response, next: NextFunction) => {
-    console.log("💀💀" + JSON.stringify(req.body) + "💀💀");
+    console.log(
+      "💀this is restrictTo middleware :💀" + JSON.stringify(req.body) + "💀💀"
+    );
     if (!roles.includes(req.body.role)) {
       return next(
         new CustomError(
@@ -158,9 +160,46 @@ const restrictTo = (...roles: string[]) => {
     } else next();
   };
 };
+const forgotPassword = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    //1) get user based on Posted email
+    const user = await UserModel.findOne<User>({ email: req.body.email }); //retrieves a user from the database
+    if (!user) {
+      return next(
+        new CustomError(
+          "No user with email address in frogotPassword methode :",
+          404
+        )
+      );
+    }
+    //2) generate the random resetToken
+
+    const resetToken: Promise<string> = user.creatPasswordResetToken();
+    resetToken
+      .then((result) => {
+        console.log(
+          "this is the resetToken in forgotPassword methode :",
+          result
+        );
+      })
+      .catch((error) => {
+        console.error(
+          "the resetToken doesn't came from the middlware :",
+          error
+        );
+      });
+    await user.save({ validateBeforeSave: false }); //to disactivate all the validators that we set to save in schema file
+    console.log("the saving is done ✅✅");
+    //3) send it to the user email
+  }
+);
+const resetPassword = (req: Request, res: Response, next: NextFunction) => {};
+
 export const authController = {
   signup,
   login,
   protect,
   restrictTo,
+  forgotPassword,
+  resetPassword,
 };
