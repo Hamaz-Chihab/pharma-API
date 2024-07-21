@@ -5,6 +5,10 @@ import { NextFunction, Request, Response, Router } from "express";
 import { UserModel, User } from "../modules/user.schema";
 import { catchAsync } from "../utils/catchAsync";
 import { CustomError } from "./errorController";
+import sendEmail from "../utils/email";
+import * as crypto from "crypto";
+import * as bcrypt from "bcrypt";
+
 // Define the Value type (adjust as needed)
 
 type Value = number;
@@ -174,32 +178,124 @@ const forgotPassword = catchAsync(
     }
     //2) generate the random resetToken
 
-    const resetToken: Promise<string> = user.creatPasswordResetToken();
-    resetToken
-      .then((result) => {
-        console.log(
-          "this is the resetToken in forgotPassword methode :",
-          result
-        );
-      })
-      .catch((error) => {
-        console.error(
-          "the resetToken doesn't came from the middlware :",
-          error
-        );
-      });
-    await user.save({ validateBeforeSave: false }); //to disactivate all the validators that we set to save in schema file
+    const resetToken = await user.creatPasswordResetToken();
+
+    // console.log("this is the resetToken  " + resetToken);
+    // console.log("the line befor saving ?? " + user);
+    const updateFields = {
+      passwordResetToken: user.passwordResetToken,
+      passwordRestExpires: user.passwordRestExpires,
+    };
+    try {
+      await UserModel.updateOne(
+        { _id: user.id },
+        { $set: updateFields },
+        { upsert: true }
+      );
+      // console.log("User updated successfully!");
+    } catch (err) {
+      return next(new CustomError("this is a problem of saving ", 400));
+    }
+    // console.log("entering the section of sending an email ");
     //3) send it to the user email
-    res.status(201).json({
-      status: "success ,the saving is done ✅✅",
-      data: {
-        user: user, // Includes all fields defined in the schema
-      },
+    const resetURL = `${req.protocol}://${req.get(
+      "host"
+    )}/api/v1/users/resetPassword/${resetToken}`;
+    const message = `Forgot your password? Submit a PATCH request with your new password and passwordConfirm to ${resetURL}.\nIf you didn't forget your password, please ignore this email.`;
+    // console.log("this is the resetUrl :" + resetURL);
+    try {
+      await sendEmail({
+        email: user.email,
+        subject: "Your password reset token (Valid for 10 min)",
+        message,
+      });
+      res.status(201).json({
+        status: "success",
+        message: ",saving is done and Token send to email!",
+        resetToken: resetToken,
+
+        data: {
+          user: user, // Includes all fields defined in the schema
+        },
+      });
+    } catch (err) {
+      // reset bothe the passwordResetToken AND passwordRestExpires IN DATABASE AS Undifined
+      user.passwordResetToken = "";
+      user.passwordRestExpires = null;
+      await user.save({ validateBeforeSave: false }); //to disactivate all the validators that we set to save in schema file
+      return next(
+        new CustomError("there is an error sending the email !!Try later", 500)
+      );
+    }
+  }
+);
+const resetPassword = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    //1) get a user based on the Token
+    const hashedToken = crypto
+      .createHash("sha256")
+      .update(req.params.token)
+      .digest("hex");
+    const user = await UserModel.findOne({
+      passwordResetToken: hashedToken,
+      passwordRestExpires: { $gt: Date.now() },
+    }); //find the user for with Token + check if Token is not yet expired
+
+    //2)  if token has not expired , and there is user , set the new password
+    if (!user) {
+      return next(
+        new CustomError(
+          "user with specific Token does not exist or Token expired  ",
+          400
+        )
+      );
+    }
+    user.password = req.body.password;
+    user.passwordConfirm = req.body.passwordConfirm;
+    user.passwordResetToken = "";
+    user.passwordRestExpires = null;
+    await user.save();
+    //3)  update the changedPasswordAt property  for the user : i added a middleware of pre save
+    //4)  log the user in , send JWT
+    const token = signToken(user._id);
+    res.status(200).json({
+      status: "success",
+      token: token,
     });
   }
 );
-const resetPassword = (req: Request, res: Response, next: NextFunction) => {};
+const updatePassword = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    //1) get the user from the Collection
+    const user = await UserModel.findOne<User>({ email: req.body.email }); //retrieves a user from the database
+    if (!user) {
+      return next(
+        new CustomError(
+          "No user with email address in frogotPassword methode :",
+          404
+        )
+      );
+    }
+    //2)  check if pasted current password is correct
+    const CurrentPassword = await bcrypt.hash(req.body.password, 10);
+    if (user.password != CurrentPassword) {
+      return next(
+        new CustomError("the current password is wrong , Try again !!", 404)
+      );
+    }
+    //3)  if so update password
+    user.password = req.body.newPassword;
+    await user.save(); //to disactivate all the validators that we set to save in schema file
 
+    //2)  log user in , send JWT
+    const token = signToken(user._id);
+    res.status(200).json({
+      status: "success",
+      message: "password has been changed successfully",
+      token: token,
+    });
+  }
+);
 export const authController = {
   signup,
   login,
@@ -207,4 +303,5 @@ export const authController = {
   restrictTo,
   forgotPassword,
   resetPassword,
+  updatePassword,
 };

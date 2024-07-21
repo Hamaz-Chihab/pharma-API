@@ -223,9 +223,6 @@ const deleteProductById = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-//   try {
-//     const apiFeatures = new ApiFeatures(req.query, req.query.toString());
-
 //     apiFeatures.filter();
 //     apiFeatures.sort();
 //     apiFeatures.limitFields();

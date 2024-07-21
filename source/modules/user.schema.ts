@@ -10,7 +10,7 @@ export interface User extends Document {
     candidatePassword: string,
     userPassword: string
   ): Promise<boolean>;
-  creatPasswordResetToken: any;
+  creatPasswordResetToken(): Promise<string>; // Define it as a function
 
   username: string;
   email: string;
@@ -21,7 +21,7 @@ export interface User extends Document {
   orders: mongoose.Types.ObjectId[]; // Reference to Order documents
   passwordChangedAt: Date;
   passwordResetToken: String;
-  passwordRestExpires: Date;
+  passwordRestExpires: Date | null;
 }
 
 const userSchema = new Schema<User>(
@@ -38,7 +38,7 @@ const userSchema = new Schema<User>(
     password: { type: String, required: true, minlength: 8, select: false }, //select : false <=> never showup in any output
     passwordConfirm: {
       type: String,
-      required: [true, "Please confirm your password"],
+      required: [false, "Please confirm your password"],
       validate: {
         //excute only in the create user and save user methode
         validator: function (this: User, el: string): boolean {
@@ -74,11 +74,21 @@ const userSchema = new Schema<User>(
 //document middleware :it runs befor .save() and .create()
 userSchema.pre("save", async function (this: User, next) {
   //only when the password is modified
-  // if (this.isModified("password")) return next();
-  //Hash the password
-  this.password = await bcrypt.hash(this.password, 12);
+  if (this.isModified("password")) {
+    // Hash the password
+    const saltRounds = 10; // Adjust this value as needed for security
+    this.password = await bcrypt.hash(this.password, saltRounds);
+    this.passwordConfirm = "";
+    next();
+  } else {
+    return next();
+  }
+  // this.password = await bcrypt.hash(this.password, 12);
   //delete the passwordConfirm field :
-  this.passwordConfirm = "";
+});
+userSchema.pre("save", async function (this: User, next) {
+  if (!this.isModified("password") || this.isNew) return next();
+  this.passwordChangedAt = new Date(Date.now() - 1000); //la creation te3 token tedi 1sec = 1000  ms
   next();
 });
 userSchema.methods.changePasswordAfter = function (JWTTimestamp: number) {
@@ -96,30 +106,24 @@ userSchema.methods.isCorrectPassword = async function (
   return await bcrypt.compare(condidatePassword, userPassword);
 };
 userSchema.methods.creatPasswordResetToken = async function () {
-  // the methode with bcrypt:
+  const resetToken = crypto.randomBytes(32).toString("hex");
+  // Hash the reset token using bcrypt:
+  // const saltRounds = 10; // Adjust this value as needed for security
+  // const salt = await bcrypt.genSalt(saltRounds); // Generate random salt (uncommented)
+  // const hashedToken = await bcrypt.hash(resetToken, salt);
+  // Hash the reset token using SHA256:
 
-  // const saltRounds = 10;
-  // const salt = await bcrypt.genSalt(saltRounds); //salt is a random value used to enhance the security of the password hash
-  // const resetToken = crypto.randomBytes(32).toString("hex");
-  // this.passwordResetToken = await bcrypt.hash(resetToken, salt);
-  // const resetToken = crypto.randomBytes(32).toString("hex");
-  // this.passwordResetToken = crypto
-  //   .createHash("sha256")
-  //   .update(resetToken)
-  //   .digest("hex");
-  const saltRounds = 10; // Adjust this value as needed for security
-  const salt = await bcrypt.genSalt(saltRounds); // Generate random salt
-  const resetToken = crypto.randomBytes(32).toString("hex"); // Generate random token
-  // Hash the reset token using bcrypt with the generated salt
-  this.passwordResetToken = await bcrypt.hash(resetToken, salt);
-  console.log("this is reseteToken without hashing :" + resetToken);
-  console.log(
-    "this is the resetToken password (hashed) :👽👽 " + this.passwordResetToken
-  );
+  const hashedToken = crypto
+    .createHash("sha256")
+    .update(resetToken)
+    .digest("hex");
+
+  // console.log("this is reseteToken without hashing :" + resetToken);
+  // console.log("this is the resetToken password (hashed) :👽👽 " + hashedToken);
+  this.passwordResetToken = hashedToken;
   this.passwordRestExpires = Date.now() + 10 * 60 * 1000;
-  console.log(
-    "the date of experation of passwordRested : " + this.passwordRestExpires
-  );
+
+  // console.log("this is the end of creatPasswordResetToken middleware !!");
   return resetToken;
 };
 export const UserModel = mongoose.model<User>("User", userSchema);
