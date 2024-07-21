@@ -5,6 +5,8 @@ import { NextFunction, Request, Response, Router } from "express";
 import { UserModel, User } from "../modules/user.schema";
 import { catchAsync } from "../utils/catchAsync";
 import { CustomError } from "./errorController";
+import sendEmail from "../utils/email";
+
 // Define the Value type (adjust as needed)
 
 type Value = number;
@@ -175,6 +177,7 @@ const forgotPassword = catchAsync(
     //2) generate the random resetToken
 
     const resetToken: Promise<string> = user.creatPasswordResetToken();
+
     resetToken
       .then((result) => {
         console.log(
@@ -190,12 +193,32 @@ const forgotPassword = catchAsync(
       });
     await user.save({ validateBeforeSave: false }); //to disactivate all the validators that we set to save in schema file
     //3) send it to the user email
-    res.status(201).json({
-      status: "success ,the saving is done ✅✅",
-      data: {
-        user: user, // Includes all fields defined in the schema
-      },
-    });
+    const resetURL = `${req.protocol}://${req.get(
+      "host"
+    )}/api/v1/users/resetPassword/${resetToken}`;
+    const message = `Forgot your password? Submit a PATCH request with your new password and passwordConfirm to ${resetURL}.\nIf you didn't forget your password, please ignore this email.`;
+    try {
+      await sendEmail({
+        email: user.email,
+        subject: "Your password reset token (Valid for 10 min)",
+        message,
+      });
+      res.status(201).json({
+        status: "success",
+        message: ",saving is done and Token send to email!",
+        data: {
+          user: user, // Includes all fields defined in the schema
+        },
+      });
+    } catch (err) {
+      // reset bothe the passwordResetToken AND passwordRestExpires IN DATABASE AS Undifined
+      user.passwordResetToken = "";
+      user.passwordRestExpires = null;
+      await user.save({ validateBeforeSave: false }); //to disactivate all the validators that we set to save in schema file
+      return next(
+        new CustomError("there is an error sending the email !!Try later", 500)
+      );
+    }
   }
 );
 const resetPassword = (req: Request, res: Response, next: NextFunction) => {};

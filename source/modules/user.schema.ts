@@ -21,7 +21,7 @@ export interface User extends Document {
   orders: mongoose.Types.ObjectId[]; // Reference to Order documents
   passwordChangedAt: Date;
   passwordResetToken: String;
-  passwordRestExpires: Date;
+  passwordRestExpires: Date | null;
 }
 
 const userSchema = new Schema<User>(
@@ -107,10 +107,11 @@ userSchema.methods.creatPasswordResetToken = async function () {
   //   .createHash("sha256")
   //   .update(resetToken)
   //   .digest("hex");
+  const resetToken = crypto.randomBytes(32).toString("hex");
+
+  // Hash the reset token using bcrypt
   const saltRounds = 10; // Adjust this value as needed for security
-  const salt = await bcrypt.genSalt(saltRounds); // Generate random salt
-  const resetToken = crypto.randomBytes(32).toString("hex"); // Generate random token
-  // Hash the reset token using bcrypt with the generated salt
+  const salt = await bcrypt.genSalt(saltRounds);
   this.passwordResetToken = await bcrypt.hash(resetToken, salt);
   console.log("this is reseteToken without hashing :" + resetToken);
   console.log(
