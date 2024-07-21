@@ -98,17 +98,20 @@ userSchema.methods.isCorrectPassword = async function (
 userSchema.methods.creatPasswordResetToken = async function () {
   // the methode with bcrypt:
 
-  const saltRounds = 10;
-  const salt = await bcrypt.genSalt(saltRounds); //salt is a random value used to enhance the security of the password hash
-  const resetToken = crypto.randomBytes(32).toString("hex");
-  this.passwordResetToken = await bcrypt.hash(resetToken, salt);
-
+  // const saltRounds = 10;
+  // const salt = await bcrypt.genSalt(saltRounds); //salt is a random value used to enhance the security of the password hash
+  // const resetToken = crypto.randomBytes(32).toString("hex");
+  // this.passwordResetToken = await bcrypt.hash(resetToken, salt);
   // const resetToken = crypto.randomBytes(32).toString("hex");
   // this.passwordResetToken = crypto
   //   .createHash("sha256")
   //   .update(resetToken)
   //   .digest("hex");
-
+  const saltRounds = 10; // Adjust this value as needed for security
+  const salt = await bcrypt.genSalt(saltRounds); // Generate random salt
+  const resetToken = crypto.randomBytes(32).toString("hex"); // Generate random token
+  // Hash the reset token using bcrypt with the generated salt
+  this.passwordResetToken = await bcrypt.hash(resetToken, salt);
   console.log("this is reseteToken without hashing :" + resetToken);
   console.log(
     "this is the resetToken password (hashed) :👽👽 " + this.passwordResetToken

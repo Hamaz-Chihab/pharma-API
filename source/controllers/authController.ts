@@ -189,8 +189,13 @@ const forgotPassword = catchAsync(
         );
       });
     await user.save({ validateBeforeSave: false }); //to disactivate all the validators that we set to save in schema file
-    console.log("the saving is done ✅✅");
     //3) send it to the user email
+    res.status(201).json({
+      status: "success ,the saving is done ✅✅",
+      data: {
+        user: user, // Includes all fields defined in the schema
+      },
+    });
   }
 );
 const resetPassword = (req: Request, res: Response, next: NextFunction) => {};
