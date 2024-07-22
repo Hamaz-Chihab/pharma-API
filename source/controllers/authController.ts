@@ -75,7 +75,6 @@ const login = catchAsync(
       status: "success",
       token: token,
     });
-    
   }
 );
 const protect = catchAsync(
@@ -271,11 +270,15 @@ const resetPassword = catchAsync(
 const updatePassword = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     //1) get the user from the Collection
-    console.log("this is the userId :" + req.body.id);
-    const user = await UserModel.findById(req.body.id).select("+password"); //user.findByIdAndUpdate will not work
+    const user = await UserModel.findOne<User>({
+      email: req.body.email,
+    }).select("+password"); //retrieves a user from the database
     console.log("this is the user from DB :" + user);
+    console.log(
+      "this is the req.body.passwordCurrent :" + req.body.passwordCurrent
+    );
+    console.log("this is the user.password :" + user?.password);
     //2)  check if pasted current password is correct
-
     if (
       !user ||
       !(await user.isCorrectPassword(req.body.passwordCurrent, user.password))
