@@ -21,7 +21,11 @@ const getUserById = catchAsync(
     res.status(200).json({ status: "success", message: user });
   }
 );
+const updateMe = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {}
+);
 export const userController = {
   createNewUser,
   getUserById,
+  updateMe,
 };

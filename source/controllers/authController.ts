@@ -12,6 +12,20 @@ import * as bcrypt from "bcrypt";
 // Define the Value type (adjust as needed)
 
 type Value = number;
+function createSendToken(
+  user: User,
+  statusCode: number,
+  message: string,
+  res: Response
+): void {
+  const token = signToken(user._id);
+
+  res.status(statusCode).json({
+    status: "success",
+    message: message,
+    token: token,
+  });
+}
 
 // Create the operationMap
 const operationMap = new Map([
@@ -70,11 +84,7 @@ const login = catchAsync(
     if (!user || !(await user.isCorrectPassword(password, user.password))) {
       return next(new CustomError("Incorrect email or password", 401));
     }
-    const token = signToken(user._id);
-    res.status(200).json({
-      status: "success",
-      token: token,
-    });
+    createSendToken(user, 200, "log in success", res);
   }
 );
 const protect = catchAsync(
@@ -257,14 +267,7 @@ const resetPassword = catchAsync(
     await user.save();
     //3)  update the changedPasswordAt property  for the user : i added a middleware of pre save
     //4)  log the user in , send JWT
-    const token = signToken(user._id);
-    res.status(200).json({
-      status: "success",
-      token: token,
-      body: {
-        user: user,
-      },
-    });
+    createSendToken(user, 200, "resetPassword success", res);
   }
 );
 const updatePassword = catchAsync(
@@ -292,14 +295,10 @@ const updatePassword = catchAsync(
     await user.save(); //to disactivate all the validators that we set to save in schema file
 
     //2)  log user in , send JWT
-    const token = signToken(user._id);
-    res.status(200).json({
-      status: "success",
-      message: "password has been changed successfully",
-      token: token,
-    });
+    createSendToken(user, 200, "password has been changed successfully", res);
   }
 );
+
 export const authController = {
   signup,
   login,
