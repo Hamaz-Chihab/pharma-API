@@ -14,6 +14,6 @@ userRoutes.route("/:id").patch().get(userController.getUserById);
 
 userRoutes.post("/forgotPassword", authController.forgotPassword);
 userRoutes.patch("/reserPassword/:token", authController.resetPassword);
-userRoutes.post("/updatePassword", authController.updatePassword);
+userRoutes.patch("/updateMyPassword", authController.updatePassword);
 
 export default userRoutes;

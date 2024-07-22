@@ -40,12 +40,11 @@ const userSchema = new Schema<User>(
       type: String,
       required: [false, "Please confirm your password"],
       validate: {
-        //excute only in the create user and save user methode
         validator: function (this: User, el: string): boolean {
-          // this works only on SAVE
+          // Compare with the actual password value (e.g., req.body.password)
           return el === this.password;
         },
-        message: "Passwords are not the same!", // Optional custom error message
+        message: "Passwords are not the same!",
       },
     },
     role: {

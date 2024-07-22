@@ -75,6 +75,7 @@ const login = catchAsync(
       status: "success",
       token: token,
     });
+    
   }
 );
 const protect = catchAsync(
@@ -261,30 +262,30 @@ const resetPassword = catchAsync(
     res.status(200).json({
       status: "success",
       token: token,
+      body: {
+        user: user,
+      },
     });
   }
 );
 const updatePassword = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     //1) get the user from the Collection
-    const user = await UserModel.findOne<User>({ email: req.body.email }); //retrieves a user from the database
-    if (!user) {
-      return next(
-        new CustomError(
-          "No user with email address in frogotPassword methode :",
-          404
-        )
-      );
-    }
+    console.log("this is the userId :" + req.body.id);
+    const user = await UserModel.findById(req.body.id).select("+password"); //user.findByIdAndUpdate will not work
+    console.log("this is the user from DB :" + user);
     //2)  check if pasted current password is correct
-    const CurrentPassword = await bcrypt.hash(req.body.password, 10);
-    if (user.password != CurrentPassword) {
-      return next(
-        new CustomError("the current password is wrong , Try again !!", 404)
-      );
+
+    if (
+      !user ||
+      !(await user.isCorrectPassword(req.body.passwordCurrent, user.password))
+    ) {
+      return next(new CustomError("Incorrect password", 401));
     }
+
     //3)  if so update password
-    user.password = req.body.newPassword;
+    user.password = req.body.password;
+    user.passwordConfirm = req.body.passwordConfirm;
     await user.save(); //to disactivate all the validators that we set to save in schema file
 
     //2)  log user in , send JWT
