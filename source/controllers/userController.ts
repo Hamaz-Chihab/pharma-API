@@ -1,7 +1,8 @@
 import { NextFunction, Request, Response, Router } from "express";
-import { UserModel } from "../modules/user.schema";
+import { User, UserModel } from "../modules/user.schema";
 import { catchAsync } from "../utils/catchAsync";
 import { CustomError } from "./errorController";
+import { IGetUserAuthInfoRequest } from "./express";
 const filterObj = function (_obj: any, ...allowedFields: string[]) {
   const newObj: Record<string, any> = {};
   Object.keys(_obj).forEach((el) => {
@@ -31,9 +32,10 @@ const getUserById = catchAsync(
   }
 );
 const updateMe = catchAsync(
-  async (req: Request, res: Response, next: NextFunction) => {
+  async (req: IGetUserAuthInfoRequest, res: Response, next: NextFunction) => {
     //1) Create error if user Posts password data
-    if (req.body.password || req.body.passwordConfirm) {
+
+    if (req.user.password || req.user.passwordConfirm) {
       return next(
         new CustomError(
           "this route is not for password update , please use /updateMyPassword!!",
@@ -42,26 +44,31 @@ const updateMe = catchAsync(
       );
     }
 
-    //2) update user documents
-    //1)methode 1 create an obj with only the changebal fields
-    // const UpdatedUser = {
-    //   username: req.body.username,
-    //   email: req.body.email,
-    //   photo: req.body.photo,
-    //   role: req.body.role,
-    // };
-    //2)methode 2 fillter the req.body to make it contain only changebal fields
-    const UpdatedUser = await filterObj(
+    // 2) fillter the req.body to make it contain only changebal fields
+    const UpdatedUser = filterObj(
       req.body,
       "username",
       "email",
       "photo",
       "role"
     );
-    const user = await UserModel.findByIdAndUpdate(req.body.id, UpdatedUser, {
+    console.log("this is the Updated User :", UpdatedUser);
+    const user = await UserModel.findByIdAndUpdate(req.user.id, UpdatedUser, {
       new: true,
       runValidators: true,
     });
+    if (!user) {
+      // Handle case where user with the provided ID is not found
+      return next(new CustomError("the user does not exist in DataBase", 404));
+    }
+    // const allowedFields = ["username", "email", "photo", "role"];
+    // for (const field of allowedFields) {
+    //   if (UpdatedUser.hasOwnProperty(field)) {
+    //     console.log(user[field] + " = " + UpdatedUser[field]);
+    //     user[field] = UpdatedUser[field];
+    //   }
+    // }
+    console.log("this is the user After the update ", user);
     res.status(200).json({
       status: "success",
       data: {

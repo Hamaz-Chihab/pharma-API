@@ -8,6 +8,7 @@ import { CustomError } from "./errorController";
 import sendEmail from "../utils/email";
 import * as crypto from "crypto";
 import * as bcrypt from "bcrypt";
+import { IGetUserAuthInfoRequest } from "./express";
 
 // Define the Value type (adjust as needed)
 
@@ -42,33 +43,35 @@ const signToken = (id: unknown) => {
     expiresIn: config.secrets.jwt_expired_date,
   });
 };
-const signup = catchAsync(async (req: Request, res: Response) => {
-  const newUser = await UserModel.create({
-    username: req.body.username,
-    email: req.body.email,
-    password: req.body.password,
-    passwordConfirm: req.body.passwordConfirm,
-    role: req.body.role,
-    orders: req.body.orders,
-  });
-  // console.log(
-  //   config.secrets.jwt,
-  //   config.secrets.jwt_expired_date,
-  //   config.secrets.JWT_SECRET,
-  //   config.secrets.JWT_EXPIRES_IN
-  // );
-  const token = signToken(newUser._id);
-  // Respond with Success and User Data
-  res.status(201).json({
-    status: "success",
-    token: token,
-    data: {
-      user: newUser, // Includes all fields defined in the schema
-    },
-  });
-});
+const signup = catchAsync(
+  async (req: IGetUserAuthInfoRequest, res: Response) => {
+    const newUser = await UserModel.create({
+      username: req.body.username,
+      email: req.body.email,
+      password: req.body.password,
+      passwordConfirm: req.body.passwordConfirm,
+      role: req.body.role,
+      orders: req.body.orders,
+    });
+    // console.log(
+    //   config.secrets.jwt,
+    //   config.secrets.jwt_expired_date,
+    //   config.secrets.JWT_SECRET,
+    //   config.secrets.JWT_EXPIRES_IN
+    // );
+    const token = signToken(newUser._id);
+    // Respond with Success and User Data
+    res.status(201).json({
+      status: "success",
+      token: token,
+      data: {
+        user: newUser, // Includes all fields defined in the schema
+      },
+    });
+  }
+);
 const login = catchAsync(
-  async (req: Request, res: Response, next: NextFunction) => {
+  async (req: IGetUserAuthInfoRequest, res: Response, next: NextFunction) => {
     const { email, password } = req.body;
 
     // Check if email and password exist
@@ -88,7 +91,7 @@ const login = catchAsync(
   }
 );
 const protect = catchAsync(
-  async (req: Request, res: Response, next: NextFunction) => {
+  async (req: IGetUserAuthInfoRequest, res: Response, next: NextFunction) => {
     //1)getting token and check of it's there
     let token;
     if (
@@ -155,27 +158,30 @@ const protect = catchAsync(
       //   // Handle the case where the password was not changed
     }
     //GRANT ACCESS TO PROTECTED ROUTE and it is very important to the midllware restrictTo()
-    req.body = currentUser;
+    req.user = currentUser;
+
     next();
   }
 );
 const restrictTo = (...roles: string[]) => {
-  return (req: Request, res: Response, next: NextFunction) => {
+  return (req: IGetUserAuthInfoRequest, res: Response, next: NextFunction) => {
     console.log(
-      "💀this is restrictTo middleware :💀" + JSON.stringify(req.body) + "💀💀"
+      "💀this is restrictTo middleware :💀" + JSON.stringify(req.user) + "💀💀"
     );
-    if (!roles.includes(req.body.role)) {
+    if (!roles.includes(req.user?.role)) {
       return next(
         new CustomError(
           "You do not have permission to perform this action",
           403
         )
       );
-    } else next();
+    } else {
+      next();
+    }
   };
 };
 const forgotPassword = catchAsync(
-  async (req: Request, res: Response, next: NextFunction) => {
+  async (req: IGetUserAuthInfoRequest, res: Response, next: NextFunction) => {
     //1) get user based on Posted email
     const user = await UserModel.findOne<User>({ email: req.body.email }); //retrieves a user from the database
     if (!user) {
@@ -240,7 +246,7 @@ const forgotPassword = catchAsync(
   }
 );
 const resetPassword = catchAsync(
-  async (req: Request, res: Response, next: NextFunction) => {
+  async (req: IGetUserAuthInfoRequest, res: Response, next: NextFunction) => {
     //1) get a user based on the Token
     const hashedToken = crypto
       .createHash("sha256")
@@ -271,7 +277,7 @@ const resetPassword = catchAsync(
   }
 );
 const updatePassword = catchAsync(
-  async (req: Request, res: Response, next: NextFunction) => {
+  async (req: IGetUserAuthInfoRequest, res: Response, next: NextFunction) => {
     //1) get the user from the Collection
     const user = await UserModel.findOne<User>({
       email: req.body.email,

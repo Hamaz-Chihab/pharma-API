@@ -20,5 +20,9 @@ productRoutes
   .route("/:id")
   .patch(productController.updateProduct)
   .get(authController.protect, productController.getProductById)
-  .delete(authController.protect,authController.restrictTo('admin'), productController.deleteProductById);//i want that only the "admin"role can delete a product So i use restrictTo() function 
+  .delete(
+    authController.protect,
+    authController.restrictTo("admin"),
+    productController.deleteProductById
+  ); //i want that only the "admin"role can delete a product So i use restrictTo() function
 export default productRoutes;

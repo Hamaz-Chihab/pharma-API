@@ -22,6 +22,7 @@ export interface User extends Document {
   passwordChangedAt: Date;
   passwordResetToken: String;
   passwordRestExpires: Date | null;
+  [key: string]: any;
 }
 
 const userSchema = new Schema<User>(

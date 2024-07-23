@@ -2,6 +2,7 @@ import express, { Request, Response, NextFunction, Router } from "express";
 import { ProductModel, Product } from "../modules/product.schema";
 import { catchAsync } from "../utils/catchAsync";
 import { CustomError } from "./errorController";
+import { IGetUserAuthInfoRequest } from "./express";
 // import { ApiFeatures } from "../utils/ApiFeatures";
 // export const productController = express.Router();
 
@@ -200,7 +201,7 @@ const updateProduct = catchAsync(async (req: Request, res: Response) => {
   res.status(200).json(product);
 });
 const getProductById = catchAsync(
-  async (req: Request, res: Response, next: NextFunction) => {
+  async (req: IGetUserAuthInfoRequest, res: Response, next: NextFunction) => {
     const product = await ProductModel.findById(req.params.id);
 
     if (!product) {
