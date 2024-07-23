@@ -11,7 +11,7 @@ userRoutes.post("/signup", authController.signup);
 userRoutes.post("/login", authController.login);
 userRoutes.route("/").get().post(userController.createNewUser);
 userRoutes.route("/:id").patch().get(userController.getUserById);
-
+userRoutes.patch("/updateMe", authController.protect, userController.updateMe);
 userRoutes.post("/forgotPassword", authController.forgotPassword);
 userRoutes.patch("/reserPassword/:token", authController.resetPassword);
 userRoutes.patch("/updateMyPassword", authController.updatePassword);
