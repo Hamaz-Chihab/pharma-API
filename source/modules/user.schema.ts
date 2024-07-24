@@ -105,6 +105,11 @@ userSchema.methods.changePasswordAfter = function (JWTTimestamp: number) {
   }
   return false;
 };
+//middleware function that runs before any query that starts with the find operation (e.g., find(), findOne(), findById()):
+userSchema.pre(/^find/, async function (next) {
+  this.find({ active: { $ne: false } }); //!= this.find({ active: true })
+  next();
+});
 //instance methode that return true or false  :
 userSchema.methods.isCorrectPassword = async function (
   condidatePassword: string,
