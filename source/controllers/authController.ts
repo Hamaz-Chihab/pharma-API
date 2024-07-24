@@ -31,10 +31,15 @@ function createSendToken(
   };
   if (config.env === "production ") cookieOptions.secure = true;
   res.cookie("jwt", token, cookieOptions);
+  user.password = "";
   res.status(statusCode).json({
     status: "success",
     message,
     token,
+
+    data: {
+      user: user,
+    },
   });
 }
 
@@ -104,7 +109,7 @@ const protect = catchAsync(
       token = req.headers.authorization.split(" ")[1];
     }
     // console.log(token);
-    if (!token) {
+    if (!token || token == null) {
       return next(
         new CustomError("you are not logged in ! please log in to access", 401)
       );
@@ -115,6 +120,7 @@ const protect = catchAsync(
       secret: string
     ): Promise<any> => {
       return new Promise((resolve, reject) => {
+        console.log("this is the token in protect : ", token);
         jwt.verify(token, secret, (err, payload) => {
           if (err) {
             reject(err);

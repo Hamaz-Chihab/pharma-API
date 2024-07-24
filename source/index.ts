@@ -5,6 +5,8 @@ import userRoutes from "./routes/userRoutes";
 import productRoutes from "./routes/productRoutes";
 import orderRoutes from "./routes/orderRoutes";
 import { errorHandler, CustomError } from "./controllers/errorController"; // Adjust the path as needed
+import rateLimit from "express-rate-limit";
+import config from "./config";
 // // import router from "./routes";
 // import morgan from "morgan";
 // const { check, validationResult } = require("express-validator");
@@ -14,7 +16,15 @@ const app = express();
 
 app.use(bodyParser.json()); // Parse JSON request bodies very important to have the req and the res contain some thing
 app.use(express.json());
-app.use(morgan("dev")); //morgan middleware to give a brave line of URL requested in console-line
+if (config.env === "development") {
+  app.use(morgan("dev")); //morgan middleware to give a brave line of URL requested in console-line
+}
+const limiter = rateLimit({
+  max: 100, //100 req/hour
+  windowMs: 60 * 60 * 1000,
+  message: "too many request from this Ip ,Please try again in an hour !!",
+});
+app.use("/api", limiter); //effect all URLs starts with /api
 app.use("/api/v1/users", userRoutes); // Assuming base path for user routes is "/api/users"
 app.use("/api/v1/products", productRoutes); // Assuming base path for product routes is "/api/products"
 app.use("/api/v1/orders", orderRoutes);
