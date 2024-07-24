@@ -26,18 +26,15 @@ function createSendToken(
 
   let cookieOptions = {
     expires: expirationDate,
-    secure: false, //the cookie will be send in an incrypted connection
-
-    httpOnly: true, //the cookie con't be accessed or modified in any way by the browser
+    secure: false,
+    httpOnly: true,
   };
-  if (config.env === "production") {
-    cookieOptions.secure = true; //the cookie will be send in an incrypted connection
-  }
+  if (config.env === "production ") cookieOptions.secure = true;
   res.cookie("jwt", token, cookieOptions);
   res.status(statusCode).json({
     status: "success",
-    message: message,
-    token: token,
+    message,
+    token,
   });
 }
 
