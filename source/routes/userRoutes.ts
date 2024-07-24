@@ -9,9 +9,13 @@ const userRoutes = Router();
 //product routes :
 userRoutes.post("/signup", authController.signup);
 userRoutes.post("/login", authController.login);
-userRoutes.route("/").get().post(userController.createNewUser);
+userRoutes
+  .route("/")
+  .get(userController.getAllUsers)
+  .post(userController.createNewUser);
 userRoutes.route("/:id").patch().get(userController.getUserById);
 userRoutes.patch("/updateMe", authController.protect, userController.updateMe);
+userRoutes.delete("/deleteMe", authController.protect, userController.deleteMe);
 userRoutes.post("/forgotPassword", authController.forgotPassword);
 userRoutes.patch("/reserPassword/:token", authController.resetPassword);
 userRoutes.patch("/updateMyPassword", authController.updatePassword);

@@ -224,26 +224,6 @@ const deleteProductById = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-//     apiFeatures.filter();
-//     apiFeatures.sort();
-//     apiFeatures.limitFields();
-//     apiFeatures.paginate();
-
-//     const query = ProductModel.find(apiFeatures.getQuery()); // Use getQuery()
-
-//     const products = await query.populate("promotions"); // Execute query with sorting, filtering, and (optional) field limiting
-
-//     console.log("this is the products :", products);
-//     res.status(200).json({
-//       status: "success",
-//       results: products.length,
-//       data: products,
-//     });
-//   } catch (err) {
-//     console.error(err);
-//     res.status(500).json({ error: "Failed to retrieve products" });
-//   }
-// };
 export const productController = {
   setProductQueryParams,
   getProductsStatus,

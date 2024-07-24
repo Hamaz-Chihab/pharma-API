@@ -22,6 +22,7 @@ export interface User extends Document {
   passwordChangedAt: Date;
   passwordResetToken: String;
   passwordRestExpires: Date | null;
+  active: boolean;
   [key: string]: any;
 }
 
@@ -62,6 +63,12 @@ const userSchema = new Schema<User>(
     passwordRestExpires: {
       type: Date,
       required: false,
+    },
+    active: {
+      type: Boolean,
+      required: false,
+      default: true,
+      select: true,
     },
   },
 
