@@ -7,15 +7,18 @@ import orderRoutes from "./routes/orderRoutes";
 import { errorHandler, CustomError } from "./controllers/errorController"; // Adjust the path as needed
 import rateLimit from "express-rate-limit";
 import config from "./config";
+import helmet from "helmet";
 // // import router from "./routes";
 // import morgan from "morgan";
 // const { check, validationResult } = require("express-validator");
 // // import { protect } from "./modules/auth";
 // // import { createNewUser, signin } from "./handlers/user";
 const app = express();
+//set security HTTPS
+app.use(helmet()); //must be in the begining ofthe middleware stack
 
 app.use(bodyParser.json()); // Parse JSON request bodies very important to have the req and the res contain some thing
-app.use(express.json());
+app.use(express.json({ limit: "10kb" }));
 if (config.env === "development") {
   app.use(morgan("dev")); //morgan middleware to give a brave line of URL requested in console-line
 }

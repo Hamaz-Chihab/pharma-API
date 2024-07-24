@@ -108,7 +108,6 @@ const protect = catchAsync(
     ) {
       token = req.headers.authorization.split(" ")[1];
     }
-    // console.log(token);
     if (!token || token == null) {
       return next(
         new CustomError("you are not logged in ! please log in to access", 401)
