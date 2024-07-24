@@ -23,6 +23,7 @@ const config = merge({
     DataBase_Password: process.env.DATABASE_PASSWORD,
     jwt_secret: process.env.JWT_SECRET,
     jwt_expired_date: process.env.JWT_EXPIRES_IN,
+    jwt_cookie_expired: process.env.JWT_COOKIE_EXPIRES,
     EmailUserName: process.env.EMAIL_USERNAME,
     EmailPassword: process.env.EMAIL_PASSWORD,
     EmailHost: process.env.EMAIL_HOST,

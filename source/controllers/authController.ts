@@ -20,7 +20,20 @@ function createSendToken(
   res: Response
 ): void {
   const token = signToken(user._id);
+  const expirationDays = config.secrets.jwt_cookie_expired;
+  const expirationMilliseconds = expirationDays * 24 * 60 * 60 * 1000;
+  const expirationDate = new Date(Date.now() + expirationMilliseconds);
 
+  let cookieOptions = {
+    expires: expirationDate,
+    secure: false, //the cookie will be send in an incrypted connection
+
+    httpOnly: true, //the cookie con't be accessed or modified in any way by the browser
+  };
+  if (config.env === "production") {
+    cookieOptions.secure = true; //the cookie will be send in an incrypted connection
+  }
+  res.cookie("jwt", token, cookieOptions);
   res.status(statusCode).json({
     status: "success",
     message: message,
@@ -59,15 +72,8 @@ const signup = catchAsync(
     //   config.secrets.JWT_SECRET,
     //   config.secrets.JWT_EXPIRES_IN
     // );
-    const token = signToken(newUser._id);
     // Respond with Success and User Data
-    res.status(201).json({
-      status: "success",
-      token: token,
-      data: {
-        user: newUser, // Includes all fields defined in the schema
-      },
-    });
+    createSendToken(newUser, 200, "sign up success", res);
   }
 );
 const login = catchAsync(
