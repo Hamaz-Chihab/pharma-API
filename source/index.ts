@@ -8,6 +8,8 @@ import { errorHandler, CustomError } from "./controllers/errorController"; // Ad
 import rateLimit from "express-rate-limit";
 import config from "./config";
 import helmet from "helmet";
+import MongoSanitize from "express-mongo-sanitize";
+// import * as xssClean from 'xss-clean';
 // // import router from "./routes";
 // import morgan from "morgan";
 // const { check, validationResult } = require("express-validator");
@@ -19,6 +21,10 @@ app.use(helmet()); //must be in the begining ofthe middleware stack
 
 app.use(bodyParser.json()); // Parse JSON request bodies very important to have the req and the res contain some thing
 app.use(express.json({ limit: "10kb" }));
+// Data sanitization againstt NoSQL  query injection attack
+app.use(MongoSanitize());
+// Data sanitization againstt XSS attack
+// app.use(xssClean());
 if (config.env === "development") {
   app.use(morgan("dev")); //morgan middleware to give a brave line of URL requested in console-line
 }
