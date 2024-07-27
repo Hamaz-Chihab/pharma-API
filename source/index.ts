@@ -1,4 +1,5 @@
 import express, { NextFunction } from "express";
+
 import morgan from "morgan";
 import bodyParser from "body-parser"; // Assuming TypeScript definitions are available
 import userRoutes from "./routes/userRoutes";
@@ -9,12 +10,12 @@ import rateLimit from "express-rate-limit";
 import config from "./config";
 import helmet from "helmet";
 import MongoSanitize from "express-mongo-sanitize";
-// import * as xssClean from 'xss-clean';
-// // import router from "./routes";
+import hpp from "hpp";
+import { whitelist } from "validator";
+// import xssClean from "xss-clean";
 // import morgan from "morgan";
 // const { check, validationResult } = require("express-validator");
-// // import { protect } from "./modules/auth";
-// // import { createNewUser, signin } from "./handlers/user";
+
 const app = express();
 //set security HTTPS
 app.use(helmet()); //must be in the begining ofthe middleware stack
@@ -23,8 +24,11 @@ app.use(bodyParser.json()); // Parse JSON request bodies very important to have 
 app.use(express.json({ limit: "10kb" }));
 // Data sanitization againstt NoSQL  query injection attack
 app.use(MongoSanitize());
+
+app.use(hpp({ whitelist: "fields" })); //remvove dublicate fields in query params
 // Data sanitization againstt XSS attack
-// app.use(xssClean());
+// app.use(xssClean());//it show me non resonalble error !!
+// app.use(express.static(`${__dirname}/public`));
 if (config.env === "development") {
   app.use(morgan("dev")); //morgan middleware to give a brave line of URL requested in console-line
 }
