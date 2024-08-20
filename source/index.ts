@@ -19,6 +19,7 @@ import { whitelist } from "validator";
 const app = express();
 //set security HTTPS
 app.use(helmet()); //must be in the begining ofthe middleware stack
+console.log(" tobtob going to kurkey 👍👍");
 
 app.use(bodyParser.json()); // Parse JSON request bodies very important to have the req and the res contain some thing
 app.use(express.json({ limit: "10kb" }));
@@ -43,7 +44,6 @@ app.use("/api/v1/products", productRoutes); // Assuming base path for product ro
 app.use("/api/v1/orders", orderRoutes);
 
 app.use(errorHandler);
-
 app.use((req, res, next) => {
   const err = new CustomError("Route not found", 404);
   err.status = "fail";
