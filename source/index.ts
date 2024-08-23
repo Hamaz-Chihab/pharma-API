@@ -33,7 +33,7 @@ app.use(hpp({ whitelist: "fields" })); //remvove dublicate fields in query param
 if (config.env === "development") {
   app.use(morgan("dev")); //morgan middleware to give a brave line of URL requested in console-line
 }
-const limiter = rateLimit({
+const limiter = rateLimit({//limiting the nmr of req to recieve
   max: 100, //100 req/hour
   windowMs: 60 * 60 * 1000,
   message: "too many request from this Ip ,Please try again in an hour !!",
