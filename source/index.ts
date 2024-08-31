@@ -20,7 +20,6 @@ const app = express();
 //set security HTTPS
 app.use(helmet()); //must be in the begining ofthe middleware stack
 console.log(" tobtob going to kurkey 👍👍");
-
 app.use(bodyParser.json()); // Parse JSON request bodies very important to have the req and the res contain some thing
 app.use(express.json({ limit: "10kb" }));
 // Data sanitization againstt NoSQL  query injection attack
@@ -33,7 +32,8 @@ app.use(hpp({ whitelist: "fields" })); //remvove dublicate fields in query param
 if (config.env === "development") {
   app.use(morgan("dev")); //morgan middleware to give a brave line of URL requested in console-line
 }
-const limiter = rateLimit({//limiting the nmr of req to recieve
+const limiter = rateLimit({
+  //limiting the nmr of req to recieve
   max: 100, //100 req/hour
   windowMs: 60 * 60 * 1000,
   message: "too many request from this Ip ,Please try again in an hour !!",

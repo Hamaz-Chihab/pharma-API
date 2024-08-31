@@ -110,7 +110,7 @@ const getAllUsers = catchAsync(async (req: Request, res: Response) => {
       delete queryObj[el];
     }
   });
-  // console.log(excludedFields);
+  console.log(excludedFields);
 
   // Field limiting (optional):
   let fieldsToSelect: string | undefined;
