@@ -50,7 +50,7 @@ const getProductsStatus = catchAsync(async (req: Request, res: Response) => {
 
   res.status(200).json({
     status: "success",
-    data: productStatus[0], // Assuming only one result from aggregation
+    data: productStatus[0], 
   });
 });
 const getAllProducts = catchAsync(

@@ -135,7 +135,7 @@ const protect = catchAsync(
       token,
       config.secrets.jwt_secret
     );
-    console.log(decoded.id);
+    console.log("decoded.id :", decoded.id);
     // 3)check if user still exists
     const currentUser = await UserModel.findById(decoded.id);
     console.log("this is currentUser var : ", currentUser);
@@ -173,9 +173,9 @@ const protect = catchAsync(
 );
 const restrictTo = (...roles: string[]) => {
   return (req: IGetUserAuthInfoRequest, res: Response, next: NextFunction) => {
-    console.log(
-      "💀this is restrictTo middleware :💀" + JSON.stringify(req.user) + "💀💀"
-    );
+    // console.log(
+    //   "💀this is restrictTo middleware :💀" + JSON.stringify(req.user) + "💀💀"
+    // );
     if (!roles.includes(req.user?.role)) {
       return next(
         new CustomError(

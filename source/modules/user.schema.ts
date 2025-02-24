@@ -92,7 +92,7 @@ userSchema.pre("save", async function (this: User, next) {
   }
   // this.password = await bcrypt.hash(this.password, 12);
   //delete the passwordConfirm field :
-});
+}); 
 userSchema.pre("save", async function (this: User, next) {
   if (!this.isModified("password") || this.isNew) return next();
   this.passwordChangedAt = new Date(Date.now() - 1000); //la creation te3 token tedi 1sec = 1000  ms
